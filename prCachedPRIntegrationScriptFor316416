@@ -1,0 +1,695 @@
+//#domainIdString-316416-domainIdString#
+
+// cached: 2018-11-25T17:25:19.413Z (Sun Nov 25 2018 12:25:19 GMT-0500 (EST))
+/*hidden*/
+
+
+var VCN = '_5bed573ac90';
+var camHead = false;
+var camhead_widget_id = false;
+var camHead_cookie_name = false;
+var nativeInjectionPlugs = false;
+var burst = false; 
+var p_name = false;
+var p_settings = false;
+var p_expires = false;
+var p_widget_id = false;
+var sn = false;
+var snId = false;
+var snCN = false;
+var tars = false;
+var camHead_Url = false;
+var vOw = false;
+var vOwf = function(){};
+var vOwb = false;
+var vOwbi = false;
+var vOwv = false;
+var vOwvi = false;
+var updates = false;
+var updatesId = false;
+
+
+
+burst = true;
+tars = "_5bed573ac90tfp9";
+
+
+
+
+p_widget_id = 1373373;
+
+
+
+updates = true;
+updatesId = 1465897
+
+
+var domains_delivery = 'd.smopy.com';
+var conf_delivery_resource_http = '/d/';
+var conf_delivery_resource_ws = '/ws/';
+var nativeInjectionPlugsId = '';
+
+
+var integrationScriptCreatedTimestamp = "&isct=1543166719";
+var prr = "&prr=http://fantasy.sundfjord.com/";
+var integrationTypeAdblockSafe = "&iscs=Y2EyMzJmNGQyM2FjNWEzMDE0OWFlMTIwNDcwZTNlOTIxMTA0OWRlN2U3ZDkwZDE5ZTFmNTc1Mjc5ODViNTYzYXwwfDV8MTkzLjIwMi4xMTAuMjR8TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgNi4yOyBXT1c2NDsgcnY6MjAuMCkgR2Vja28vMjAxMDAxMDEgRmlyZWZveC8yMC4wfDMxNjQxNnwxNTQzMTY2NzE5fGliYUhSMGNEb3ZMMlpoYm5SaGMza3VjM1Z1WkdacWIzSmtMbU52YlM4PQ==";
+Function.prototype.bind = Function.prototype.bind || function(b) {
+    if (typeof this !== "function") {
+        throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+    }
+
+    var a = Array.prototype.slice;
+    var f = a.call(arguments, 1);
+    var e = this;
+    var c = function() {};
+    var d = function() {
+        return e.apply(this instanceof c ? this : b || window, f.concat(a.call(arguments)));
+    };
+
+    c.prototype = this.prototype;
+    d.prototype = new c();
+
+    return d;
+};
+
+function PRPub2(container) {
+    window.prpubappended = true;
+    if (document.getElementsByClassName) {
+        this.containers = document.getElementsByClassName(VCN);
+    } else {
+        this.containers = document.querySelectorAll('.' + VCN);
+    }
+
+    this.widgetIds = [];
+    this.count = [];
+    this.totalNumOfElements = 0;
+    this.firstRequest = true;
+
+    this.resizeTimeout = 100;
+    this.resizeInProgress = null;
+
+    this.request = null;
+
+    this.blocker = false;
+    this.blockerTestElement = {};
+
+    this.widthRanges = [
+        [160, 220]
+    ];
+
+    this.requestCounter = 0;
+    this.requestCounterName = 'reqc';
+    this.extraWidgets = {};
+
+    var self = this;
+
+    // self initiate
+    setTimeout(function () {
+        self.initiate();
+    }, 10);
+}
+
+PRPub2.readyCheck = function(readyStates, callback) {
+    if (document.addEventListener) {
+        if (
+            (readyStates.indexOf('interactive') >= 0 && document.readyState == "interactive")
+            || (readyStates.indexOf('complete') >= 0 && document.readyState == "complete")
+        ) {
+            callback();
+        } else {
+            document.addEventListener(
+                "DOMContentLoaded",
+                function() {
+                    if (readyStates.indexOf('interactive') >= 0) {
+                        callback();
+                    }
+                },
+                false
+            );
+        }
+    } else if (document.all&&!window.opera) {
+        if (document.readyState != "complete") {
+            document.onreadystatechange = function() {
+                if (this.readyState == "complete" && readyStates.indexOf('complete') >= 0) {
+                    callback();
+                }
+            }
+        } else {
+            callback();
+        }
+    }
+
+    var oldLoad = undefined;
+    if (window.onload) {
+        oldLoad = window.onload;
+    }
+
+    window.onload = function() {
+        callback();
+        window.onload = oldLoad;
+        if (typeof window.onload === "function") {
+            window.onload();
+        }
+    }
+};
+
+PRPub2.extras = [];
+
+PRPub2.prototype.initiate = function() {
+    this.testForBlockers();
+
+    this.websocketSupported = typeof WebSocket == 'function';
+
+    this.widgets = {};
+    this.setupWidgetData();
+
+    for (var key in this.widgets) {
+        var id = this.widgets[key].id;
+        this.widgets[key].container.setAttribute('id', id);
+    }
+
+    PRPub2.executeExtras();
+
+    // Set listener, resize and visibility for each item.
+    var self = this;
+    if (window.addEventListener) {
+        window.addEventListener('resize', function() {self.handleResize();});
+    } else {
+        window.attachEvent('onresize', function() {self.handleResize();});
+    }
+    this.resized();
+};
+
+PRPub2.registerExtra = function(func) {
+    PRPub2.extras.push(func);
+};
+
+PRPub2.executeExtras = function() {
+    for(var i = 0; i < PRPub2.extras.length; i++) {
+        PRPub2.extras[i]();
+    }
+};
+
+if (camHead) {
+    PRPub2.registerExtra(function() {
+        pub.extraWidgets.ch = {
+            widgetId: camhead_widget_id
+        };
+        var div = document.createElement("div");
+        div.id = "_" + camhead_widget_id;
+        div.style.display = "none";
+        document.body.appendChild(div);
+        pub.extraWidgets.ch.container = div;
+    });
+}
+
+if (nativeInjectionPlugs) {
+PRPub2.registerExtra(function() {
+    PRPub2.readyCheck(['complete'], function() {
+        if (_WiInP === 1) {
+            return;
+        }
+        _WiInP = 1;
+        /**if (window.location.pathname != '/') {
+            return;
+        }*/
+
+        var native_adzone=function(a){function b(d){if(c[d])return c[d].exports;var e=c[d]={i:d,l:!1,exports:{}};return a[d].call(e.exports,e,e.exports,b),e.l=!0,e.exports}var c={};return b.m=a,b.c=c,b.d=function(a,c,d){b.o(a,c)||Object.defineProperty(a,c,{configurable:!1,enumerable:!0,get:d})},b.n=function(a){var c=a&&a.__esModule?function(){return a['default']}:function(){return a};return b.d(c,'a',c),c},b.o=function(a,b){return Object.prototype.hasOwnProperty.call(a,b)},b.p='',b(b.s=0)}([function(a,b,c){'use strict';function d(a,b){if(!(a instanceof b))throw new TypeError('Cannot call a class as a function')}Object.defineProperty(b,'__esModule',{value:!0});var e,f=c(1),g=function(a){return a&&a.__esModule?a:{default:a}}(f);e=function a(){d(this,a),this.plugs=new g.default(document.getElementsByTagName('body')[0])},b.default=e},function(a,b,c){'use strict';function d(a,b){if(!(a instanceof b))throw new TypeError('Cannot call a class as a function')}Object.defineProperty(b,'__esModule',{value:!0});var e,f=function(){function a(a,b){for(var c,d=0;d<b.length;d++)c=b[d],c.enumerable=c.enumerable||!1,c.configurable=!0,'value'in c&&(c.writable=!0),Object.defineProperty(a,c.key,c)}return function(b,c,d){return c&&a(b.prototype,c),d&&a(b,d),b}}(),g=c(2),h=function(a){return a&&a.__esModule?a:{default:a}}(g);e=function(){var a=function(){function a(b){var c=this;d(this,a),this.detectLikelyPlugs=this.detectLikelyPlugs.bind(this),this.markContainer=this.markContainer.bind(this),this.registerContainerForInjection=this.registerContainerForInjection.bind(this),this.incrementImageCountOnNode=this.incrementImageCountOnNode.bind(this),this.rootNode=b,this.imgs=this.rootNode.getElementsByTagName('img'),1>this.imgs.length||(this.sortImgsByWidth(),this.setLargestImageCountByWidth(),this.detectLikelyPlugs([function(a){return a.clientWidth===+c.largestImgCountByWidthKey},function(b){var c,d;return c=b.parentNode.getElementsByTagName('img'),d=Array.from(c).filter(function(b){return b.clientWidth>a.MIN_IMG_SIZE}),!(1<d.length)}]),this.markContainers(),this.identifyBestContainer())}return f(a,[{key:'detectLikelyPlugs',value:function(a){var b,c,d,e,f,g,h,i,j,k,l,m,n;for(n={},l=Object.keys(this.imgsSortedByImgWidth),(d=0,g=l.length);d<g;d++)for(e=l[d],m=this.imgsSortedByImgWidth[e],(f=0,h=m.length);f<h;f++){for(c=m[f],k=!0,(j=0,i=a.length);j<i&&(b=a[j],b(c)||(k=!1),!!k);j++);k&&(null==n[e]&&(n[e]=[]),n[e].push(c))}return this.imgsSortedByImgWidth=n}},{key:'setLargestImageCountByWidth',value:function(){var a,b,c,d,e,f;for(c=Object.keys(this.imgsSortedByImgWidth),d=0,e=0,(a=0,f=c.length);a<f;a++)b=c[a],this.imgsSortedByImgWidth[b].length>d&&(e=b,d=this.imgsSortedByImgWidth[b].length);return this.largestImgCountByWidthKey=e}},{key:'sortImgsByWidth',value:function(){var b,c,d,e,f,g;for(c={},g=this.imgs,(d=0,e=g.length);d<e;d++)(b=g[d],b.clientWidth&&!(b.clientWidth<a.MIN_IMG_SIZE))&&(null==c[f=b.clientWidth]&&(c[f]=[]),c[b.clientWidth].push(b));return this.imgsSortedByImgWidth=c}},{key:'identifyBestContainer',value:function(){var a,b,c,d,e;for(a=null,e=this.possibleContainers,(c=0,d=e.length);c<d;c++)b=e[c],a||(a=b),b.numOfPlugs>a.numOfPlugs&&(a=b);return this.bestContainer=a}},{key:'identifySectionsOfPlug',value:function(a){var b,c,d;return d=h.default.textNodesUnder(a),d=d.filter(function(a){return 0<a.textContent.replace('\n','').trim().length&&'NOSCRIPT'!==a.parentNode.nodeName}),b=null,0<d.length&&(c=function(a){return a.textContent.replace(/([^A-Za-z]|\n)/g,'').length},b=d.reduce(function(b,a){return c(a)>c(b)?a:b})),a.plugTitleNode=b,a.titleAttrNode=a.querySelectorAll('*[title]'),a.imgs=a.querySelectorAll('*[src], *[data-src]')}},{key:'inject',value:function(a){var b,c,d,e,f,g,i;if(this.bestContainer&&a&&!(1>a.length)){for(i=h.default.getAllAfter(this.bestContainer.firstPossiblePlug,b=function(a){if(1===a.imageCount)return!0}),i.unshift(this.bestContainer.firstPossiblePlug),g=[],(c=e=1,f=this.bestContainer.colsOfPlugs);1<=f?e<=f:e>=f;c=1<=f?++e:--e)d=Math.floor(Math.random()*this.bestContainer.numOfPlugs),g.push(this.bestContainer.insertBefore(this.newPlug(this.bestContainer.firstPossiblePlug,a[(c-1)%a.length]),i[d]));return g}}},{key:'markContainers',value:function(){var a,b,c,d;if(!(1>Object.keys(this.imgsSortedByImgWidth))){for(d=this.imgsSortedByImgWidth[this.largestImgCountByWidthKey],b=0,c=d.length;b<c;b++)a=d[b],h.default.traverseUp(a,this.rootNode,this.incrementImageCountOnNode,h.default.traverseUp);return h.default.traverseDown('branch',this.rootNode,this.registerContainerForInjection,h.default.traverseDown)}}},{key:'markContainer',value:function(a){var b,c,d,e,f;for(a.className=a.className+=' '+this.containerClassName,a.firstPossiblePlug=null,e=a.childNodes,f=[],(c=0,d=e.length);c<d;c++)if(b=e[c],1===b.imageCount){a.firstPossiblePlug=b;break}else f.push(void 0);return f}},{key:'registerContainerForInjection',value:function(b){var c,d,e,f;if(!b.imageCount||2>b.imageCount)return!1;if(0===a.identifyRowsAndColsOf(b))return!1;if(1>b.rowsOfPlugs)return!1;for(f=b.childNodes,d=0,e=f.length;d<e;d++)if(c=f[d],0<c.childNodes.length&&1===c.imageCount){this.markContainer(b),this.possibleContainers.push(b);break}return!0}},{key:'incrementImageCountOnNode',value:function(a){return a.imageCount||(a.imageCount=0),a.imageCount++,!0}},{key:'newPlug',value:function(b,c){var d,e,f,g,h,i,j,n,r,s,u,v,k,l,w,x,y,z,A,B,C,D,m,o,p,E,q,F,G,H,I,t,J;for(g=b.cloneNode(!0),this.identifySectionsOfPlug(g),a.clearHoverOver(g),a.removeIds(g),g.plugTitleNode&&c.title&&(g.plugTitleNode.textContent=c.title),q=g.titleAttrNode,(v=0,l=q.length);v<l;v++)I=q[v],g.plugTitleNode&&(I.title=g.plugTitleNode.textContent);for(t={clientHeight:0,clientWidth:0,height:0,width:0},h,F=b.getElementsByTagName('img'),(k=0,w=F.length);k<w;k++)J=F[k],t.clientWidth<J.clientWidth&&(t=J);for(G=g.imgs,D=0,x=G.length;D<x;D++)u=G[D],(!h||h.clientWidth<u.clientWidth||h.width<u.width)&&(h=u),u.onmouseover=function(){if(u.hasOwnProperty('onmouseover'))return{}},u.onmouseout=function(){if(u.hasOwnProperty('onmouseout'))return{}};for(H=g.imgs,m=0,y=H.length;m<y;m++)if(u=H[m],u===h||u.clientWidth&&!(u.clientWidth<a.MIN_IMG_SIZE)){for(;0<u.attributes.length;)u.removeAttribute(u.attributes[0].name);c.thumbUrl&&(u.src=c.thumbUrl),c.thumbUrl&&u.hasAttribute('data-lazy-src')&&u.setAttribute('data-lazy-src',c.thumbUrl),c.thumbUrl&&u.setAttribute('data-src',c.thumbUrl),u.alt&&(u.alt=c.title),u.title&&(u.title=c.title),u.style.opacity=1}for(e=[],C=g.getElementsByTagName('a'),(o=0,z=C.length);o<z;o++)B=C[o],B.href&&e.push(B);if(g.title&&(g.title=c.title),'A'===g.tagName)g.href=c.clickUrl,g.target='_blank',g.rel='nofollow';else if(1>e.length)g.onclick=function(){return window.location=c.clickUrl};else for(E=0,A=C.length;E<A;E++)B=C[E],B.href=c.clickUrl,B.target='_blank',B.title&&(B.title=c.title),B.rel='nofollow';for(n=t.parentNode&&0<t.parentNode.clientWidth?t.parentNode:t,j=h.parentNode;n!==this.bestContainer&&(n.clientWidth<J.clientWidth||n.clientHeight<J.clientHeight)&&n.parentNode&&'hidden'!==getComputedStyle(n).overflow;)n=n.parentNode,j.parentNode&&(j=j.parentNode);return n.parentNode&&0>=n.parentNode.clientWidth?(f=getComputedStyle(t),d=t.getBoundingClientRect(),s=d.width,r=d.height,f.paddingLeft&&(s-=f.paddingLeft.replace('px','')),f.paddingRight&&(s-=f.paddingRight.replace('px','')),f.paddingTop&&(r-=f.paddingTop.replace('px','')),f.paddingBottom&&(r-=f.paddingBottom.replace('px','')),h.style.width=s+'px',h.style.height=r+'px',g):(h.style.opacity=1,j&&(j.style.overflow='hidden'),h.parentNode&&(h.parentNode.style.overflow='hidden'),p=n.clientWidth/n.clientHeight,i=c.thumbWidth/c.thumbHeight,p>i?(h.style.width=n.clientWidth+'px',h.style.height=n.clientWidth*(1/i)+'px',h.parentNode.style.height=n.clientHeight+'px'):(h.style.height=n.clientHeight+'px',h.style.width=n.clientHeight*i+'px',console.log(n.clientHeight,c.thumbHeight)),g)}},{key:'getCount',value:function(){return this.bestContainer?this.bestContainer.colsOfPlugs:0}},{key:'getWidth',value:function(){return+this.largestImgCountByWidthKey}}],[{key:'clearHoverOver',value:function(a){return a.addEventListener('mouseover',function(a){if(a.preventDefault&&a.preventDefault(),a.stopPropagation)return a.stopPropagation()})}},{key:'removeIds',value:function(b){var c,d,e,f,g;if(b.removeAttribute&&b.removeAttribute('id'),b.childNodes){for(f=b.childNodes,g=[],(d=0,e=f.length);d<e;d++)c=f[d],g.push(a.removeIds(c));return g}}},{key:'identifyRowsAndColsOf',value:function(b){var c,d,e,f,g,h,i,j,k;for(d=b.getElementsByTagName('img'),j=0,h=0,i=0,c=0,(f=0,g=d.length);f<g;f++)(e=d[f],e.clientWidth&&!(e.clientWidth<a.MIN_IMG_SIZE))&&(k=e.getBoundingClientRect(),k.top>c&&(c=k.top,0===h&&(h=i),j++),i++);return b.rowsOfPlugs=j,b.colsOfPlugs=h,b.numOfPlugs=i,j}},{key:'isPossiblePlug',value:function(a){return'IMG'===a.tagName}}]),a}();return a.prototype.rootNode=null,a.prototype.containerClassName='native_plug_container',a.prototype.possibleContainers=[],a.prototype.bestContainer=null,a.prototype.largestImgCountByWidthKey=null,a.prototype.imgsSortedByImgWidth={},a.prototype.imgs=[],a.MIN_IMG_SIZE=50,a}.call(void 0),b.default=e},function(a,b){'use strict';function c(a,b){if(!(a instanceof b))throw new TypeError('Cannot call a class as a function')}Object.defineProperty(b,'__esModule',{value:!0});var d,e=function(){function a(a,b){for(var c,d=0;d<b.length;d++)c=b[d],c.enumerable=c.enumerable||!1,c.configurable=!0,'value'in c&&(c.writable=!0),Object.defineProperty(a,c.key,c)}return function(b,c,d){return c&&a(b.prototype,c),d&&a(b,d),b}}();d=function(){function b(){c(this,b)}return e(b,null,[{key:'compatibleTagNames',value:function(){return['A','DIV','UL','IMG']}},{key:'getAllAfter',value:function(a,b){var c;for(c=[];a=a.nextSibling;)b(a)&&c.push(a);return c}},{key:'traverseDown',value:function(){var a,b,c,d,e,f=0<arguments.length&&void 0!==arguments[0]&&arguments[0],g=arguments[1],h=arguments[2],i=arguments[3];for(e=g.childNodes,a=0,b=e.length;a<b;a++){if(d=e[a],c=h(d),!c&&!f)return;c&&i(f,d,h,i)}}},{key:'traverseUp',value:function(a,b,c,d,e){return e=e||[],c(a)?a===b?e:d(a.parentNode,b,c,d,e):void 0}},{key:'textNodesUnder',value:function(c){var d;return d=[],b.traverseDown(!0,c,function(a){return a.nodeType===Node.TEXT_NODE&&d.push(a),'SCRIPT'!==a.nodeName},b.traverseDown),d}}]),b}(),b.default=d}]);
+        var nativeInjectionAd = new native_adzone.default();
+        if (nativeInjectionAd.plugs.getCount() < 1) {
+            return;
+        }
+        pub.getOverHttp(
+            '//' + domains_delivery + conf_delivery_resource_http + '?resource=bundler&widgets='
+            + nativeInjectionPlugsId + ":" + nativeInjectionAd.plugs.getCount()
+            + '&width=' + nativeInjectionAd.plugs.getWidth()
+            +'&format=json',
+            function(res) {
+                if (!res || !res.target || !res.target.response) {
+                    return;
+                }
+                res = JSON.parse(res.target.response);
+                var plugs = [];
+                var key = Object.keys(res)[0];
+                var plugKeys = Object.keys(res[key].plugs);
+                for(var i = 0; i < plugKeys.length; i++) {
+                    plugs.push(res[key].plugs[plugKeys[i]]);
+                }
+                nativeInjectionAd.plugs.inject(plugs);
+            }
+        );
+    });
+});
+}
+
+if (burst) {
+    PRPub2.registerExtra(function() {
+        if (pub.hasCookie(tars)) {
+            return;
+        }
+        pub.extraWidgets.prp = {
+            prp: true,
+            widgetId: p_widget_id
+        };
+        var div = document.createElement("div");
+        div.id = "_" + p_widget_id;
+        div.style.display = "none";
+        document.body.appendChild(div);
+        pub.extraWidgets.prp.container = div;
+    });
+}
+
+if (sn) {
+    PRPub2.registerExtra(function() {
+        if (pub.hasCookie(snCN)) {
+            return;
+        }
+
+        pub.extraWidgets.sn = {
+            widgetId: snId
+        };
+        var div = document.createElement("div");
+        div.id = "_" + snId;
+        div.style.display = "none";
+        document.body.appendChild(div);
+        pub.extraWidgets.sn.container = div;
+    });
+}
+
+if (updates) {
+    PRPub2.registerExtra(function() {
+        pub.extraWidgets.updates = {
+            widgetId: updatesId
+        };
+        var div = document.createElement("div");
+        div.id = "_" + updatesId;
+        div.style.display = "none";
+        document.body.appendChild(div);
+        pub.extraWidgets.updates.container = div;
+    });
+}
+
+if (vOw) {
+    PRPub2.registerExtra(vOwf);
+}
+
+PRPub2.prototype.testForBlockers = function() {
+
+};
+
+/**
+ * Set up data used for rendering.
+ */
+PRPub2.prototype.setupWidgetData = function() {
+    for (var i = 0; i < this.containers.length; i++) {
+        var widgetId = this.containers[i].id;
+
+        this.widgets[widgetId] = {
+            "id": this.generateId(),
+            "container": this.containers[i],
+            "styleTag": null,
+            "styleTagId": null,
+            "numOfElements": 0,
+            "optimalNumOfElements": 2,
+            "width": 0
+        };
+    }
+};
+
+/**
+ * Generates and returns a random ID string.
+ *
+ * @returns {string}
+ */
+PRPub2.prototype.generateId = function() {
+    var id = VCN + "_item_";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 10; i++ ) {
+        id += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return id;
+};
+
+/**
+ * Handles resizing as a single deferred event.
+ *
+ * Some browsers fires this event for every pixel difference during the resizing process.
+ */
+PRPub2.prototype.handleResize = function() {
+    var self = this;
+    clearTimeout(self.resizeInProgress);
+    self.resizeInProgress = setTimeout(function() {
+        self.resized();
+    }, self.resizeTimeout);
+};
+
+/**
+ * May or may not trigger recalculations of content space and a request for new or more content.
+ */
+PRPub2.prototype.resized = function() {
+    for (var key in this.widgets) {
+        var newWidth = this.widgets[key].container.scrollWidth;
+        var currentWidth = this.widgets[key].width;
+        if (!currentWidth || newWidth != currentWidth) {
+            this.widgets[key].width = newWidth;
+            this.recalculateSizeAndContent(key);
+        }
+    }
+    this.getMoreContents();
+};
+
+/**
+ * Calculate the size of the elements and the amount to display.
+ */
+PRPub2.prototype.recalculateSizeAndContent = function(key) {
+    for (var i = 1; i <= 50; i++) {
+        var calculated = (this.widgets[key].width / i);
+        if (calculated >= this.widthRanges[0][0] && calculated <= this.widthRanges[0][1]) {
+            this.widgets[key].optimalNumOfElements = i;
+            break;
+        }
+    }
+};
+
+/**
+ * Fetch more content if more elements are needed.
+ */
+PRPub2.prototype.getMoreContents = function() {
+    if (this.needMoreContent()) {
+        this.getContents();
+    }
+};
+
+/**
+ * Can our container fit more elements than it currently is set to show?
+ *
+ * @returns {boolean}
+ */
+PRPub2.prototype.needMoreContent = function() {
+    if (this.firstRequest) {
+        return true;
+    }
+    var ret = false;
+    for (key in this.widgets) {
+        if (this.widgets[key].optimalNumOfElements > this.widgets[key].numOfElements) {
+            ret = true;
+        }
+    }
+    return ret;
+};
+
+PRPub2.prototype.getContents = function() {
+    this.setNumberOfElements();
+    this.gatherWidgetCountAndIds();
+
+    var extraWidgetsKeys = Object.keys(this.extraWidgets);
+
+    if ((extraWidgetsKeys.length === 0 || !this.firstRequest) && this.totalNumOfElements < 1) {
+        return;
+    }
+
+    if (this.websocketSupported && this.blocker) {
+        //this.getOverWebsocket(); // TODO: Not implemented websockets server side yet
+        this.getOverHttp();
+    } else {
+        this.getOverHttp();
+    }
+    this.firstRequest = false;
+};
+
+PRPub2.prototype.getOverWebsocket = function() {
+    var widgetIds = this.widgetIds.join(',').replace(/_/g, '');
+    this.request = new WebSocket('ws://' + domains_delivery + conf_delivery_resource_ws + '?resource=bundler&counts='
+        + this.count.join(',') + '&widgetIds=' + widgetIds);
+    this.request.onmessage = this.handleWebsocketResponse.bind(this);
+};
+
+PRPub2.prototype.getOverHttp = function(url, callback) {
+    url = url || false;
+    var request;
+    if (window.XDomainRequest) {
+        request = new XDomainRequest();
+        if (!callback) {
+            request.onload = this.handleHttpResponse.bind(this);
+        } else {
+            request.onload = callback.bind(this);
+        }
+    } else if (window.XMLHttpRequest) {
+        request = new XMLHttpRequest();
+        //request.withCredentials = true;
+        if (!callback) {
+            request.onloadend = this.handleHttpResponse.bind(this);
+        } else {
+            request.onloadend = callback.bind(this);
+        }
+    } else {
+        request = new ActiveXObject('Microsoft.XMLHTTP');
+        if (!callback) {
+            request.onloadend = this.handleHttpResponse.bind(this);
+        } else {
+            request.onloadend = callback.bind(this);
+        }
+    }
+
+    if (!url) {
+        url = '//' + domains_delivery + conf_delivery_resource_http + '?resource=bundler&widgets='
+            + this.widgetValues();
+    }
+
+    url += integrationScriptCreatedTimestamp;
+    url += prr;
+    url += integrationTypeAdblockSafe;
+    url += this.appendRequestCounter();
+
+    request.open('GET', url);
+    if (!callback) {
+        this.request = request;
+    }
+    request.send();
+};
+
+
+PRPub2.prototype.appendRequestCounter = function() {
+    return "&" + this.requestCounterName + "=" + (++this.requestCounter);
+};
+
+
+PRPub2.prototype.widgetValues = function() {
+    var ret = [];
+    for (var i = 0; i < this.widgetIds.length; i++) {
+        ret.push(this.widgetIds[i].replace(/_/g, '') + ":" + (this.count[i] ? this.count[i] : '1'));
+    }
+    if (this.firstRequest && typeof this.extraWidgets === "object") {
+        var keys = Object.keys(this.extraWidgets);
+        for (var i = 0; i < keys.length; i++) {
+            ret.push(this.extraWidgets[keys[i]].widgetId + ":1");
+        }
+    }
+    return ret.join(',');
+}
+
+PRPub2.prototype.handleWebsocketResponse = function(response) {
+    var data = JSON.parse(response.data);
+    for (key in this.widgets) {
+        var dataKey = key.replace('_', '');
+        this.widgets[key].container.innerHTML = data[dataKey];
+    }
+};
+
+PRPub2.prototype.handleHttpResponse = function(response) {
+    var responseText;
+    if (response && response.target && response.target.responseText) {
+        responseText = response.target.responseText;
+    } else if (this && this.request && this.request.responseText) {
+        responseText = this.request.responseText;
+    } else {
+        return;
+    }
+
+    var data = JSON.parse(responseText);
+    var widgets = Object.assign({}, this.widgets);
+    var extraKeys = this.extraWidgets ? Object.keys(this.extraWidgets) : [];
+    for (var i = 0; i < extraKeys.length; i++) {
+        widgets[this.extraWidgets[extraKeys[i]].widgetId] = this.extraWidgets[extraKeys[i]];
+    }
+    for (key in widgets) {
+        var dataKey = key.replace('_', '');
+        this.insertAndHandleResponse(widgets[key].container, data[dataKey]);
+    }
+};
+
+PRPub2.prototype.insertAndHandleResponse = function(container, data) {
+    if (!data) {
+        return;
+    }
+
+    var JSONParse;
+    if (JSONParse = pub.parseJSON(data)) {
+        pub.createScriptTagFromObject(container, JSONParse);
+        return;
+    }
+
+    if (data.substring(0, 10) == '/*Script*/') {
+        var scriptTag = document.createElement('script');
+        scriptTag.type = 'text/javascript';
+        scriptTag.innerHTML = data;
+        container.appendChild(scriptTag);
+        return;
+    }
+
+    container.innerHTML = data;
+
+    this.calculateSizesAndShowContents(container);
+};
+
+PRPub2.prototype.parseJSON = function(data) {
+    try {
+        var JSONTemplate = JSON.parse(data);
+    } catch (err) {
+        return false;
+    }
+    return JSONTemplate
+};
+
+PRPub2.prototype.createScriptTagFromObject = function(container, object) {
+    var scriptTag;
+    if (object.hasOwnProperty('contents')) {
+        scriptTag = document.createElement('script');
+        scriptTag.type = 'text/javascript';
+        scriptTag.innerHTML = object.contents;
+        container.appendChild(scriptTag);
+    }
+    scriptTag = document.createElement('script');
+    scriptTag.type = 'text/javascript';
+    scriptTag.src = object.src;
+    scriptTag.id = object.id;
+    container.appendChild(scriptTag);
+};
+
+PRPub2.prototype.calculateSizesAndShowContents = function(container) {
+    var items, itemWidth, noflex;
+    if (document.getElementsByClassName) {
+        noflex = container.getElementsByClassName('praz--noflex');
+        items = container.getElementsByClassName('praz__item');
+    } else {
+        noflex = container.querySelectorAll('.praz--noflex');
+        items = container.querySelectorAll('.praz__item');
+    }
+    if (noflex.length > 0) {
+        itemWidth = 100 / items.length;
+        for (var i = 0; i < items.length; i++) {
+            items[i].style.width = String(itemWidth)+'%';
+        }
+    }
+    container.style.display = 'block';
+};
+
+/**
+ * Sets the number of elements each widget should request based on what is optimal.
+ */
+PRPub2.prototype.setNumberOfElements = function() {
+    this.totalNumOfElements = 0;
+    for (key in this.widgets) {
+        this.widgets[key].numOfElements = this.widgets[key].optimalNumOfElements;
+        this.totalNumOfElements += this.widgets[key].optimalNumOfElements;
+    }
+};
+
+/**
+ * Collects the widget count and widget ids in their own separate arrays.
+ */
+PRPub2.prototype.gatherWidgetCountAndIds = function() {
+    for (key in this.widgets) {
+        this.count.push(this.widgets[key].numOfElements);
+        this.widgetIds.push(key);
+    }
+};
+
+/**
+ * Creates and adds a style tag for this zone.
+ */
+PRPub2.prototype.addStyleTag = function(key) {
+    var id = '_'+this.widgets[key].id;
+    var styleTagId = id+'_style';
+    this.widgets[key].styleTag = document.createElement('style');
+    this.widgets[key].styleTag.setAttribute('id', styleTagId);
+    this.widgets[key].container.parentNode.insertBefore(this.widgets[key].styleTag, document.getElementById(id));
+};
+
+PRPub2.prototype.hasCookie = function(cookieName) {
+    var p = document.cookie.split(';');
+    for (var i=0; i < p.length; i++) {
+        var cn = p[i].replace(' ','');
+        if (cn.substring(0, cookieName.length) == cookieName) {
+            return true;
+        }
+    }
+    return false;
+};
+
+function getStyle(el,styleProp) {
+    var camelize = function (str) {
+        return str.replace(/\-(\w)/g, function(str, letter){
+            return letter.toUpperCase();
+        });
+    };
+
+    if (el.currentStyle) {
+        return el.currentStyle[camelize(styleProp)];
+    } else if (document.defaultView && document.defaultView.getComputedStyle) {
+        return document.defaultView.getComputedStyle(el,null)
+            .getPropertyValue(styleProp);
+    } else {
+        return el.style[camelize(styleProp)];
+    }
+}
+
+var _WiState = 0;
+var pub;
+PRPub2.readyCheck(['interactive', 'complete'], function() {
+    if (_WiState !== 1) {
+        _WiState = 1;
+        if (!window.prpubappended) pub = new PRPub2();
+    }
+});
+
+
+/**
+ * Polyfills
+ */
+/**
+ * Object.assign polyfill for old browsers
+ */
+if (typeof Object.assign !== 'function') {
+    /* Must be writable: true, enumerable: false, configurable: true */
+    Object.defineProperty(Object, "assign", {
+        value: function assign(target, varArgs) {
+            /* .length of function is 2 */
+            'use strict';
+            if (target == null) {
+                /* TypeError if undefined or null */
+                throw new TypeError('Cannot convert undefined or null to object');
+            }
+
+            var to = Object(target);
+
+            for (var index = 1; index < arguments.length; index++) {
+                var nextSource = arguments[index];
+
+                if (nextSource != null) {
+                    /* Skip over if undefined or null */
+                    for (var nextKey in nextSource) {
+                        /* Avoid bugs when hasOwnProperty is shadowed */
+                        if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                            to[nextKey] = nextSource[nextKey];
+                        }
+                    }
+                }
+            }
+            return to;
+        },
+        writable: true,
+        configurable: true
+    });
+}
