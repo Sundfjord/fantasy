@@ -29,7 +29,7 @@ export default {
             this.$emit('loading', true);
             var payload = {
                 teamID: this.team.id,
-                leagueId: parseInt(leagueId),
+                leagueId: leagueId,
                 info: 'live'
             };
 

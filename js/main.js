@@ -4,21 +4,42 @@ import LeagueSelect from './select-league.js';
 import LiveLeague from './live-league.js';
 
 export default {
-	props: ['timestamp', 'playerdata', 'submittedteam', 'submittedleague'],
+	props: ['unsupported', 'updating', 'countdown'],
 	mounted() {
-		if (this.timestamp) {
-			this.active = false;
+		this.active = !this.countdown;
+		this.baseURL = 'http://' + preloaded.baseURL + '/fantasy';
+		if (preloaded.teamData) {
+			this.setTeam(preloaded.teamData);
 		}
-		if (this.submittedteam) {
-			this.setTeam(this.submittedteam);
-		}
-		if (this.submittedleague) {
-			this.setLeague(this.submittedleague);
+		if (preloaded.leagueData) {
+			this.setLeague(preloaded.leagueData);
 		}
 	},
 	template: `
 		<div>
 			<div class="siimple-spinner siimple-spinner--dark siimple-spinner--large loading-spinner" v-show="loading"></div>
+			<div class="siimple-content siimple-content--extra-large" v-if="unsupported">
+				<div class="siimple-grid">
+					<div class="siimple-grid-col--12">
+						<div class="siimple-box siimple-box-icon">
+							<i class="fas fa-exclamation-triangle siimple-warning"></i>
+						    <div class="siimple-box-title">Your browser is not supported</div>
+						    <div class="siimple-box-subtitle">Try again with a non-shit browser, like Chrome, FireFox, Safari or Edge.</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="siimple-content siimple-content--extra-large" v-if="updating">
+				<div class="siimple-grid">
+					<div class="siimple-grid-col--12">
+						<div class="siimple-box siimple-box-icon">
+							<i class="fas fa-sync-alt siimple-warning"></i>
+							<div class="siimple-box-title">The game is updating.</div>
+							<div class="siimple-box-subtitle">Please try again in a moment.</div>
+						</div>
+					</div>
+				</div>
+			</div>
 			<div class="siimple-grid" :class="{loading: loading}" v-if="active">
 				<div class="siimple-grid-row margin-bottom-10">
 					<div class="siimple-btn siimple-btn--grey margin-bottom-0" @click="goBack" v-show="team"><span class="fas fa-arrow-left"></span> Back</div>
@@ -34,29 +55,26 @@ export default {
 					v-if="!team"
 					@loading="toggleLoading"
 					@setTeam="setTeam">
-					:submittedteam="submittedteam"
 				</team-select>
 				<league-select
 					v-if="team && !league"
 					@loading="toggleLoading"
 					@setLeague="setLeague"
 					:team="team"
-					:submittedleague="submittedleague"
 					:leagues="leagues">
 				</league-select>
 				<live-league
 					v-if="team && league"
 					@loading="toggleLoading"
 					:team="team"
-					:league="league"
-					:players="playerdata">
+					:league="league">
 				</live-league>
 			</div>
 			<div class="siimple-grid" v-else>
 				<div class="siimple-grid-row">
 					<countdown
 						@activate="active = true"
-						:timestamp="timestamp">
+						:countdown="countdown">
 					</countdown>
 				</div>
 			</div>
@@ -70,7 +88,7 @@ export default {
 			league: null,
 			leagueId: null,
 			loading: false,
-			baseURL: 'http://sundfjord.com/fantasy',
+			baseURL: '',
 			bonus: true
 		}
 	},
@@ -91,7 +109,7 @@ export default {
 			this.leagueId = leagueId ? leagueId : data[0].league;
 			this.loading = false;
 			let url = this.baseURL + '?team=' + this.team.id + '&league=' + this.leagueId;
-			this.pushNewURL(url);
+			this.pushNewURL(this.baseURL + '?team=' + this.team.id + '&league=' + this.leagueId);
 		},
 		update() {
 			this.loading = true;
@@ -137,7 +155,7 @@ export default {
 			}
 		},
 		pushNewURL(url) {
-			history.pushState(null, null, url);
+			history.pushState('', '', url);
 		}
 	},
 

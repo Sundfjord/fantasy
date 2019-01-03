@@ -1,53 +1,14 @@
 <?php
-	require_once(__DIR__.'/curler.php');
+	require_once(__DIR__.'/Base.php');
+	require_once(__DIR__.'/FantasyData.php');
+	$base = new Base();
+	$fantasy = new FantasyData();
 
-	$team = (int)$_GET['team'] ? $_GET['team'] : null;
-	$teamData = null;
-
-	$league = (int)$_GET['league'] ? $_GET['league'] : null;
-	$leagueData = null;
-
-	$curler = new Curler($team);
-	$static = $curler->getStatic();
-	if ($team) {
-		$teamData = $curler->getTeamData();
-	}
-	if ($league) {
-		$leagueData = $curler->getLeagueData($league);
-	}
-
-	$playerData = $curler->getPlayerData();
-
-	$currentGWData;
-	$nextGWData;
-	$updating = true;
-	if (!empty($static)) {
-		$updating = false;
-		foreach ($static['events'] as $gw => $gwData) {
-			if ($gwData['is_current']) {
-				$currentGWData = $gwData;
-				$nextGWData = $static['events'][$gw+1];
-				break;
-			}
-		}
-	}
-
-	$timestamp = 0;
-	if ($currentGWData['finished']) {
-		$timestamp = strtotime($nextGWData['deadline_time']) + 60 * 60;
-	}
-	$compatible = true;
-	$userAgent = $_SERVER['HTTP_USER_AGENT'];
-	$unsupported = [
-		'SamsungBrowser',
-		'UCBrowser',
-		'MSIE',
-		'Trident'
-	];
-	foreach ($unsupported as $string) {
-		if (strpos($userAgent, $string) !== false) {
-			$compatible = false;
-			break;
+	$data = ['baseURL' => $_SERVER['SERVER_NAME']];
+	if (isset($_GET['team'])) {
+		$data['teamData'] = $fantasy->getTeamData($_GET['team']);
+		if (isset($_GET['league'])) {
+			$data['leagueData'] = $fantasy->getLeagueData($_GET['league']);
 		}
 	}
 ?>
@@ -76,7 +37,9 @@
 
           gtag('config', 'UA-124543902-1');
         </script>
-
+        <script>
+			var preloaded = <?php echo json_encode($data); ?>;
+        </script>
     </head>
 	<body>
 		<div class="siimple-jumbotron siimple-jumbotron--extra-large fantasy">
@@ -89,51 +52,22 @@
 				When you simply cannot wait for your minileague to be updated.
 		    </div>
 		</div>
-		<?php if ($compatible) {
-			if ($updating) { ?>
-				<div class="siimple-content siimple-content--extra-large">
-					<div class="siimple-grid">
-						<div class="siimple-grid-col--12">
-							<div class="siimple-box siimple-box-icon">
-								<i class="fas fa-sync-alt siimple-warning"></i>
-							    <div class="siimple-box-title">The game is updating.</div>
-							    <div class="siimple-box-subtitle">Please try again in a moment.</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			<?php } else { ?>
-				<div id="app" class="siimple-content siimple-content--extra-large">
-					<main-component
-						:timestamp="<?php echo $timestamp; ?>"
-						:playerdata='<?php echo json_encode($playerData) ?>'
-						:submittedteam='<?php echo json_encode($teamData) ?>'
-						:submittedleague='<?php echo json_encode($leagueData) ?>'>
-					</main-component>
-				</div>
-				<script type="module" src="/fantasy/js/App.js?v=<?php echo str_shuffle('abdefghijklmnopqrstuxyz1234567890') ?>"></script>
-				<script>
-				    $(document).on("click", '.open-modal', function () {
-				        document.getElementById("modal").style.display = "";
-				    });
-				    $(document).on("click", '#modal-close', function() {
-				    	document.getElementById("modal").style.display = "none";
-				    });
-				</script>
-			<?php } ?>
-		<?php } else { ?>
-			<div class="siimple-content siimple-content--extra-large">
-				<div class="siimple-grid">
-					<div class="siimple-grid-col--12">
-						<div class="siimple-box siimple-box-icon">
-							<i class="fas fa-exclamation-triangle siimple-warning"></i>
-						    <div class="siimple-box-title">Your browser is not supported</div>
-						    <div class="siimple-box-subtitle">Try again with a non-shit browser, like Chrome, FireFox, Safari or Edge.</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		<?php } ?>
+		<div id="app" class="siimple-content siimple-content--extra-large">
+			<main-component
+				:unsupported='<?php echo json_encode($base->visitorIsUsingUnsupportedBrowser()); ?>'
+				:updating='<?php echo json_encode($fantasy->isUpdating()); ?>'
+				:countdown='<?php echo json_encode($fantasy->getTimeToNextGameweek()); ?>'>
+			</main-component>
+		</div>
+		<script type="module" src="/fantasy/js/App.js?v=<?php echo str_shuffle('abdefghijklmnopqrstuxyz1234567890') ?>"></script>
+		<script>
+			$(document).on("click", '.open-modal', function () {
+				document.getElementById("modal").style.display = "";
+			});
+			$(document).on("click", '#modal-close', function() {
+				document.getElementById("modal").style.display = "none";
+			});
+		</script>
 		<div class="siimple-footer siimple-footer-sticky" align="center">
 		    Laga av <strong>sundfjord</strong>
 		</div>

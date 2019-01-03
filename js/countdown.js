@@ -22,7 +22,7 @@ export default {
             <h3 class="margin-top-10 text-center">Until next Gameweek</h3>
         </div>
     `,
-    props: ['timestamp'],
+    props: ['countdown'],
     data() {
         return {
             ticking: false,
@@ -36,7 +36,7 @@ export default {
     },
     mounted() {
         // Update the count down every 1 second
-        this.deadline = this.timestamp * 1000;
+        this.deadline = this.countdown * 1000;
         this.timerCount(this.deadline);
         this.interval = setInterval(() => {
             this.timerCount(this.deadline);

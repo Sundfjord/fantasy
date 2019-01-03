@@ -23,7 +23,7 @@ export default {
                         {{ team.real_rank }} <i class="fas" :class="getIconClass(team.movement)"></i>
                     </div>
                     <div class="siimple-table-cell">
-                        <strong>{{ team.team_name }}</strong>
+                        <strong>{{ team.entry_name }}</strong>
                         <span class="siimple-tag siimple-tag--primary margin-left-5" v-if="team.chip != ''">
                             {{ getActiveChipName(team) }}
                         </span><br>
@@ -31,7 +31,7 @@ export default {
                     </div>
                     <div class="siimple-table-cell">{{ team.real_event_total }}</div>
                     <div class="siimple-table-cell">{{ team.real_total}}</div>
-                    <div class="siimple-table-cell siimple--text-center clickable" style="border-left: 1px solid #cbd8e6;" @click="toggleDetails(team.id)">
+                    <div class="siimple-table-cell siimple--text-center clickable" style="border-left: 1px solid #cbd8e6;" @click="toggleDetails(team.entry)">
                         <span style="font-size: 25px;">
                             <span v-if="team.expanded"><i class="fa fa-caret-up"></i></span>
                             <span v-else><i class="fa fa-caret-down"></i></span>
@@ -39,9 +39,9 @@ export default {
                     </div>
                 </div>
                 <div class="siimple-table-row" v-show="team.expanded" v-for="pick in team.picks">
-                    <div class="siimple-table-cell">{{ pick.position }}</div>
+                    <div class="siimple-table-cell">{{ getPositionInString(pick.position) }}</div>
                     <div class="siimple-table-cell">
-                        <strong>{{ pick.name }}</strong>
+                        <strong>{{ pick.name }} {{ getCaptaincyRoleIfAny(pick) }}</strong>
                     </div>
                     <div class="siimple-table-cell">
                         <span class="siimple-table-cell-sortable open-modal" @click="setModalContent(pick)">
@@ -82,12 +82,11 @@ export default {
         </div>
     </div>
     `,
-    props: ['team', 'league', 'players'],
+    props: ['team', 'league'],
     data() {
         return {
             sortBy: 'real_total',
             sortDirection: 'desc',
-            showBreakdownModal: false,
             modalContent: {
                 name: '',
                 content: {}
@@ -96,24 +95,8 @@ export default {
     },
     computed: {
         newLeagueTable() {
-            let newLeagueTable = [];
-            for (var x in this.league) {
-                let team = this.league[x];
-                newLeagueTable.push({
-                    id: team.entry,
-                    team_name: team.entry_name,
-                    player_name: team.player_name,
-                    real_event_total: team.real_event_total,
-                    real_total: this.getRealTotal(team),
-                    last_rank: team.last_rank,
-                    picks: this.getDetailedPlayerData(team.picks),
-                    expanded: team.expanded,
-                    chip: team.chip
-                });
-            }
-
             var that = this;
-            newLeagueTable.sort(function(a, b) {
+            this.league.sort(function(a, b) {
                 if (that.sortDirection == 'desc') {
                     return b[that.sortBy] - a[that.sortBy];
                 } else {
@@ -121,12 +104,12 @@ export default {
                 }
             });
 
-            for (var x in newLeagueTable) {
-                newLeagueTable[x].real_rank = parseInt(x) + 1;
-                newLeagueTable[x].movement = this.getMovement(newLeagueTable[x]);
+            for (var x in this.league) {
+                this.league[x].real_rank = parseInt(x) + 1;
+                this.league[x].movement = this.getMovement(this.league[x]);
             }
 
-            return newLeagueTable;
+            return this.league;
         },
     },
     methods: {
@@ -137,41 +120,6 @@ export default {
                     break;
                 }
             }
-        },
-        getDetailedPlayerData(picks) {
-            let detailedPlayerData = [];
-            for (var x in picks) {
-                if (typeof picks[x].points == "undefined") {
-                    continue;
-                }
-
-                let name = this.players[picks[x].id].name;
-                let points = picks[x].points;
-                let breakdown = picks[x].breakdown;
-                if (picks[x].captain) {
-                    if (picks[x].tripleCaptain) {
-                        name += ' (TC)';
-                    } else {
-                        name += ' (C)';
-                    }
-                }
-                if (picks[x].viceCaptain) {
-                    name += ' (VC)';
-                }
-
-                detailedPlayerData.push({
-                    position: this.getPositionInString(this.players[picks[x].id].position),
-                    name: name,
-                    full_name: this.players[picks[x].id].first_name + ' ' + this.players[picks[x].id].second_name,
-                    cost: this.players[picks[x].id].cost,
-                    points: points,
-                    breakdown: breakdown,
-                    bonus: picks[x].bonus,
-                    bonus_provisional: picks[x].bonus_provisional
-                });
-            }
-
-            return detailedPlayerData;
         },
         setModalContent(pick) {
             if (pick.bonus) {
@@ -186,7 +134,7 @@ export default {
                 }
             }
             this.modalContent = {
-                title: pick.name,
+                title: pick.fullName,
                 cost: pick.cost,
                 content: pick.breakdown
             };
@@ -214,8 +162,20 @@ export default {
                     return '';
             }
         },
-        getRealTotal(team) {
-            return parseInt(team.total - team.event_total + team.real_event_total);
+        getCaptaincyRoleIfAny(pick) {
+            if (pick.viceCaptain) {
+                return '(VC)';
+            }
+
+            if (!pick.captain) {
+                return '';
+            }
+
+            if (pick.tripleCaptain) {
+                return '(TC)';
+            }
+
+            return '(C)';
         },
         getMovement(team) {
             if (team.real_rank < team.last_rank) {

@@ -45,7 +45,7 @@
 
             this.$emit('loading', true);
             var payload = {
-                teamID: parseInt(this.teamID),
+                teamId: parseInt(this.teamID),
                 info: 'team'
             };
 

@@ -1,21 +1,27 @@
 <?php
-require_once(__DIR__.'/curler.php');
+require_once(__DIR__.'/FantasyData.php');
 
 $data = $_GET;
 sleep(1);
-$curler = new Curler($data['teamID']);
+$fantasy = new FantasyData();
+
+if ($fantasy->isUpdating()) {
+	echo json_encode(['updating' => true]);
+	return;
+}
+
 switch($data['info']) {
 	case 'team':
-		$result = $curler->getTeamData();
+		$result = $fantasy->getTeamData($data['teamId']);
 	break;
 	case 'live':
-		$result = $curler->getLeagueData($data['leagueId']);
+		$result = $fantasy->getLeagueData($data['leagueId']);
 	break;
 }
 
 if (!$result) {
 	header('HTTP/1.1 422 Unprocessable Entity');
-	echo json_encode(['error' => $curler->errorMessage]);
+	echo json_encode(['error' => $fantasy->errorMessage]);
 }
 
 echo json_encode($result);
