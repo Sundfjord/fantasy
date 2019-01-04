@@ -4,17 +4,6 @@ import LeagueSelect from './select-league.js';
 import LiveLeague from './live-league.js';
 
 export default {
-	props: ['unsupported', 'updating', 'countdown'],
-	mounted() {
-		this.active = !this.countdown;
-		this.baseURL = 'http://' + preloaded.baseURL + '/fantasy';
-		if (preloaded.teamData) {
-			this.setTeam(preloaded.teamData);
-		}
-		if (preloaded.leagueData) {
-			this.setLeague(preloaded.leagueData);
-		}
-	},
 	template: `
 		<div>
 			<div class="siimple-spinner siimple-spinner--dark siimple-spinner--large loading-spinner" v-show="loading"></div>
@@ -80,6 +69,7 @@ export default {
 			</div>
 		</div>
   	`,
+  	props: ['unsupported', 'updating', 'countdown'],
 	data() {
 		return {
 			active: true,
@@ -92,7 +82,16 @@ export default {
 			bonus: true
 		}
 	},
-
+	mounted() {
+		this.active = !this.countdown;
+		this.baseURL = 'http://' + preloaded.baseURL + '/fantasy';
+		if (preloaded.teamData) {
+			this.setTeam(preloaded.teamData);
+		}
+		if (preloaded.leagueData) {
+			this.setLeague(preloaded.leagueData);
+		}
+	},
 	methods: {
 		toggleLoading(loading) {
 			this.loading = loading;
