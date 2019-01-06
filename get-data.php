@@ -13,10 +13,10 @@ if ($fantasy->isUpdating()) {
 switch($data['info']) {
 	case 'team':
 		$result = $fantasy->getTeamData($data['teamId']);
-	break;
+		break;
 	case 'live':
-		$result = $fantasy->getLeagueData($data['leagueId']);
-	break;
+		$result = $fantasy->getLeagueData($data['leagueId'], $data['page']);
+		break;
 }
 
 if (!$result) {

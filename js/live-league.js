@@ -1,5 +1,17 @@
 export default {
     template: `
+    <div>
+    <div class="siimple-grid-row margin-bottom-10">
+        <div class="siimple-btn siimple-btn--grey margin-bottom-0" @click="goBack" v-show="team"><span class="fas fa-arrow-left"></span> Back</div>
+        <div class="siimple-btn siimple-btn--primary siimple--float-right" v-show="team && league" @click="update"><span class="fas fa-sync-alt margin-right-5"></span> Update</div>
+        <!--<div class="siimple-switch siimple--float-right margin-right-30">
+            <input type="checkbox" id="mySwitch" checked>
+            <label for="mySwitch"></label>
+            <div>
+        </div>
+        </div>-->
+        <!-- <img v-show="league" height="30" class="bw margin-top-5" title="Automatically updating league results" src="/fantasy/media/live.gif"> -->
+    </div>
     <div class="siimple-grid-row-fullwidth">
         <div class="siimple-table siimple-table--striped">
             <div class="siimple-table-header" style="padding: 10px; border-bottom: 0!important;">
@@ -54,6 +66,10 @@ export default {
             </div>
         </div>
 
+        <div id="observed-element" class="siimple-text-center">
+            <div class="siimple-spinner siimple-spinner--dark siimple-spinner--large" v-show="isLoadingMoreTeams"></div>
+        </div>
+
          <div class="siimple-modal siimple-modal--small" id="modal" style="display: none;">
             <div class="siimple-modal-content">
                 <div class="siimple-modal-header">
@@ -81,17 +97,23 @@ export default {
             </div>
         </div>
     </div>
+    </div>
     `,
     props: ['team', 'league'],
     data() {
         return {
             sortBy: 'real_total',
             sortDirection: 'desc',
+            intersectionObserver: null,
+            isLoadingMoreTeams: false,
             modalContent: {
                 name: '',
                 content: {}
-            }
+            },
         }
+    },
+    mounted() {
+        this.setIntersectionObserver();
     },
     computed: {
         newLeagueTable() {
@@ -111,8 +133,67 @@ export default {
 
             return this.league;
         },
+        hasMoreTeamsToShow() {
+            return !this.league[this.league.length-1].is_last;
+        }
     },
     methods: {
+        goBack() {
+            this.$parent.goBack();
+        },
+        setIntersectionObserver() {
+            let observed = document.getElementById('observed-element');
+            let config = {
+                rootMargin: '100px 0px',
+            };
+
+            let observer = new IntersectionObserver(this.loadMoreTeams, config);
+            observer.observe(observed);
+            this.intersectionObserver = observer;
+        },
+        update(more) {
+            let page = 1;
+            if (more === true) {
+                this.isLoadingMoreTeams = true;
+                page = Math.ceil((this.league.length + 50) / 50);
+            } else {
+                this.$emit('loading', true);
+                page = [];
+                for (var i = 1; i <= Math.ceil(this.league.length / 50); i++) {
+                    page.push(i);
+                }
+
+            }
+
+            var payload = {
+                teamID: this.team.id,
+                leagueId: this.league[0].league,
+                info: 'live',
+                page: page
+            };
+
+            var that = this;
+            $.get('/fantasy/get-data.php', payload)
+            .done(function(data) {
+                let newLeague = JSON.parse(data);
+                if (more === true) {
+                    newLeague = that.league.concat(JSON.parse(data));
+                }
+                that.$emit('setLeague', newLeague, payload.leagueId);
+            })
+            .fail(function(data) {
+                let errorData = JSON.parse(data.responseText);
+                that.error = errorData.error;
+                that.$emit('loading', false);
+            });
+        },
+        loadMoreTeams(entry) {
+            if (!entry[0].isIntersecting || this.$parent.isLoadingMoreTeams || !this.hasMoreTeamsToShow) {
+                return;
+            }
+
+            this.update(true);
+        },
         toggleDetails(id) {
             for (var x in this.league) {
                 if (id == this.league[x].entry) {
@@ -223,5 +304,5 @@ export default {
                 break;
             }
         }
-    }
+    },
 }

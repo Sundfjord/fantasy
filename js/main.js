@@ -30,16 +30,6 @@ export default {
 				</div>
 			</div>
 			<div class="siimple-grid" :class="{loading: loading}" v-if="active">
-				<div class="siimple-grid-row margin-bottom-10">
-					<div class="siimple-btn siimple-btn--grey margin-bottom-0" @click="goBack" v-show="team"><span class="fas fa-arrow-left"></span> Back</div>
-					<div class="siimple-btn siimple-btn--primary siimple--float-right" v-show="team && league" @click="update"><span class="fas fa-sync-alt margin-right-5"></span> Update</div>
-					<!--<div class="siimple-switch siimple--float-right margin-right-30">
-					    <input type="checkbox" id="mySwitch" checked>
-					    <label for="mySwitch"></label>
-					    <div></div>
-					</div>-->
-					<!-- <img v-show="league" height="30" class="bw margin-top-5" title="Automatically updating league results" src="/fantasy/media/live.gif"> -->
-				</div>
 				<team-select
 					v-if="!team"
 					@loading="toggleLoading"
@@ -55,6 +45,7 @@ export default {
 				<live-league
 					v-if="team && league"
 					@loading="toggleLoading"
+					@setLeague="setLeague"
 					:team="team"
 					:league="league">
 				</live-league>
@@ -68,18 +59,17 @@ export default {
 				</div>
 			</div>
 		</div>
-  	`,
-  	props: ['unsupported', 'updating', 'countdown'],
+	`,
+	props: ['unsupported', 'updating', 'countdown'],
 	data() {
 		return {
+			baseURL: '',
 			active: true,
+			loading: false,
 			team: null,
 			leagues: null,
 			league: null,
-			leagueId: null,
-			loading: false,
-			baseURL: '',
-			bonus: true
+			leagueId: null
 		}
 	},
 	mounted() {
@@ -105,39 +95,19 @@ export default {
 		},
 		setLeague(data, leagueId) {
 			this.league = data;
-			this.leagueId = leagueId ? leagueId : data[0].league;
 			this.loading = false;
-			let url = this.baseURL + '?team=' + this.team.id + '&league=' + this.leagueId;
-			this.pushNewURL(this.baseURL + '?team=' + this.team.id + '&league=' + this.leagueId);
-		},
-		update() {
-			this.loading = true;
-			var payload = {
-				teamID: this.team.id,
-			    leagueId: parseInt(this.leagueId),
-			    info: 'live'
-			};
-
-			var that = this;
-			$.get('/fantasy/get-data.php', payload)
-			.done(function(data) {
-			    that.setLeague(JSON.parse(data), payload.leagueId);
-			})
-			.fail(function(data) {
-			    let errorData = JSON.parse(data.responseText);
-			    that.error = errorData.error;
-			    that.loading = false;
-			});
+			let url = this.baseURL + '?team=' + this.team.id + '&league=' + data[0].league;
+			this.pushNewURL(url);
 		},
 		poll() {
 			var that = this;
 			setTimeout(function() {
-				if (!that.league || !that.leagueId) {
+				if (!that.league || !that.league[0].league) {
 					return;
 				}
 
 				this.update();
-		  	}, 30000);
+			}, 30000);
 		},
 		goBack() {
 			if (this.league) {
@@ -155,7 +125,7 @@ export default {
 		},
 		pushNewURL(url) {
 			history.pushState('', '', url);
-		}
+		},
 	},
 
 	components: {

@@ -134,7 +134,7 @@ class FantasyData
         return $this->curl->get($this->teamURL, true);
     }
 
-    public function getLeagueData($leagueId)
+    public function getLeagueData($leagueId, $page = 1)
     {
         // Get current gameweek
         $currentEvent = $this->staticData['current-event'];
@@ -143,11 +143,32 @@ class FantasyData
         $pointsData = $this->curl->get("https://fantasy.premierleague.com/drf/event/$currentEvent/live", true);
 
         // For every team in the given league, generate URLs from which to get individual team's points data
-        $leagueData = $this->curl->get(self::FANTASY_CLASSIC_LEAGUE_URL . $leagueId, true);
-        $urls = [];
-        foreach ($leagueData['standings']['results'] as $index => $team) {
-            $urls[] = "https://fantasy.premierleague.com/drf/entry/". $team["entry"] . "/event/$currentEvent/picks";
+        $leagueURLs = [];
+        if (is_numeric($page)) {
+            // Fetch specific page (lazy loading)
+            $leagueURLs[] = self::FANTASY_CLASSIC_LEAGUE_URL . $leagueId . '?phase=1&le-page=1&ls-page=' . $page;
+        } else {
+            // Fetch a set of pages
+            for ($i = 1; $i <= count($page); $i++) {
+                $leagueURLs[] = self::FANTASY_CLASSIC_LEAGUE_URL . $leagueId . '?phase=1&le-page=1&ls-page=' . $i;
+            }
         }
+
+        $leagueData = $this->curl->getMulti($leagueURLs, true);
+
+        $standings = [];
+        $urls = [];
+        foreach ($leagueData as $page) {
+            foreach ($page['standings']['results'] as $index => $team) {
+                $team['is_last'] = false;
+                if (!$page['standings']['has_next'] && $index == (count($page['standings']['results'])-1)) {
+                    $team['is_last'] = true;
+                }
+                $standings[] = $team;
+                $urls[] = "https://fantasy.premierleague.com/drf/entry/". $team["entry"] . "/event/$currentEvent/picks";
+            }
+        }
+
         // Perform fetch of team points data
         $teamData = $this->curl->getMulti($urls, true);
 
@@ -213,12 +234,12 @@ class FantasyData
             }
 
             $teamResults[$index]['points'] = $teamPoints;
-            $teamResults[$index]['picks'] = array_values($playerData);
+            $teamResults[$index]['picks'] = array_values($playerData); // Convert to indexed array
             $teamResults[$index]['chip'] = $team['active_chip'];
         }
 
         $results = [];
-        foreach ($leagueData['standings']['results'] as $index => $team) {
+        foreach ($standings as $index => $team) {
             $team['real_event_total'] = $teamResults[$index]['points'];
             $team['real_total'] = ($team['total'] - $team['event_total'] + $team['real_event_total']);
             $team['picks'] = $teamResults[$index]['picks'];
