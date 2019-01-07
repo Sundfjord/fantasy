@@ -172,9 +172,12 @@ class FantasyData
         // Perform fetch of team points data
         $teamData = $this->curl->getMulti($urls, true);
 
+        $transfersData = $this->getTransfersData($standings);
+
         // Loop through each team's player picks
         $teamResults = [];
         foreach ($teamData as $index => $team) {
+            $hasTransfers = !empty($transfersData[$index]);
             $playerData = [];
             // Add some additional data about each player in currently iterated team
             foreach ($team['picks'] as $key => $player) {
@@ -199,6 +202,7 @@ class FantasyData
                     'points' => 0,
                     'bonus' => 0,
                     'bonus_provisional' => false,
+                    'transferred_in_for' => false,
                     'breakdown' => $pointsData['elements'][$playerId]['explain'][0][0]
                 ];
             }
@@ -213,6 +217,19 @@ class FantasyData
                 // Add this player's current points to team's and individual tally
                 $teamPoints += $playerPoints;
                 $playerData[$id]['points'] = $playerPoints;
+
+
+                if ($hasTransfers) {
+                    foreach ($transfersData[$index] as $transfers) {
+                        foreach ($transfers as $in => $out) {
+                            if ($id != $in) {
+                                continue;
+                            }
+
+                            $playerData[$id]['transferred_in_for'] = $this->playerData[$out]['web_name'];
+                        }
+                    }
+                }
 
                 // No bonus points for this player, carry on
                 if (!isset($bonusPointsData[$id])) {
@@ -295,6 +312,38 @@ class FantasyData
         }
 
         return $bonusPoints;
+    }
+
+    protected function getTransfersData($standings)
+    {
+        $urls = [];
+        foreach ($standings as $team) {
+            $urls[] = self::FANTASY_TEAM_URL . $team['entry'] . '/transfers';
+        }
+
+        $currentEvent = $this->staticData['current-event'];
+        $transferData = $this->curl->getMulti($urls, true);
+        $transfers = [];
+        foreach ($transferData as $teamTransfers) {
+            if (empty($teamTransfers['history'])) {
+                continue;
+            }
+
+            $eventTransfers = [];
+            foreach (array_reverse($teamTransfers['history']) as $history) {
+                if ($currentEvent != $history['event']) {
+                    break;
+                }
+
+                $eventTransfers[] = [
+                    $history['element_in'] => $history['element_out'],
+                ];
+                $transfers[] = $eventTransfers;
+            }
+
+        }
+
+        return $transfers;
     }
 
     protected function pretty_dump($data)
