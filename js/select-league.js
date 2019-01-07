@@ -47,12 +47,17 @@ export default {
             var that = this;
             $.get('/fantasy/get-data.php', payload)
             .done(function(data) {
-                that.$emit('setLeague', JSON.parse(data), leagueId);
+                let result = JSON.parse(data);
+                that.$emit('setLeague', result.data, leagueId);
             })
             .fail(function(data) {
                 let errorData = JSON.parse(data.responseText);
                 that.error = errorData.error;
                 that.$emit('loading', false);
+            })
+            .always(function(data) {
+                let result = JSON.parse(data);
+                console.log(result.duration);
             });
         },
         goBack() {

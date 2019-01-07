@@ -52,13 +52,17 @@
             var that = this;
             $.get('/fantasy/get-data.php', payload)
             .done(function(data) {
-                data = JSON.parse(data);
-                that.$emit('setTeam', data);
+                let result = JSON.parse(data);
+                that.$emit('setTeam', result.data);
             })
             .fail(function(data) {
                 let errorData = JSON.parse(data.responseText);
                 that.error = errorData.error;
                 that.$emit('loading', false);
+            })
+            .always(function(data) {
+                let result = JSON.parse(data);
+                console.log(result.duration);
             });
         }
     }

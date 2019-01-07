@@ -10,12 +10,13 @@ if ($fantasy->isUpdating()) {
 	return;
 }
 
+$result = [];
 switch($data['info']) {
 	case 'team':
-		$result = $fantasy->getTeamData($data['teamId']);
+		$result['data'] = $fantasy->getTeamData($data['teamId']);
 		break;
 	case 'live':
-		$result = $fantasy->getLeagueData($data['leagueId'], $data['page']);
+		$result['data'] = $fantasy->getLeagueData($data['leagueId'], $data['page']);
 		break;
 }
 
@@ -23,5 +24,8 @@ if (!$result) {
 	header('HTTP/1.1 422 Unprocessable Entity');
 	echo json_encode(['error' => $fantasy->errorMessage]);
 }
+
+$duration = microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'];
+$result['duration'] = $duration;//date('u', $duration);
 
 echo json_encode($result);

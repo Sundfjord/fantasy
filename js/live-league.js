@@ -53,7 +53,7 @@ export default {
                 <div class="siimple-table-row" v-show="team.expanded" v-for="pick in team.picks">
                     <div class="siimple-table-cell">{{ getPositionInString(pick.position) }}</div>
                     <div class="siimple-table-cell">
-                        <strong>{{ pick.name }} {{ getCaptaincyRoleIfAny(pick) }}</strong>
+                        <strong>{{ pick.name }} {{ getCaptaincyRoleIfAny(pick) }} </strong><span v-if="pick.transferred_in_for"><i class="siimple--color-success fa fa-arrow-alt-circle-left"></i> <i class="siimple--color-error fa fa-arrow-alt-circle-right"></i> {{ pick.transferred_in_for }}</span>
                     </div>
                     <div class="siimple-table-cell">
                         <span class="siimple-table-cell-sortable open-modal" @click="setModalContent(pick)">
@@ -175,9 +175,10 @@ export default {
             var that = this;
             $.get('/fantasy/get-data.php', payload)
             .done(function(data) {
-                let newLeague = JSON.parse(data);
+                let result = JSON.parse(data);
+                let newLeague = result.data;
                 if (more === true) {
-                    newLeague = that.league.concat(JSON.parse(data));
+                    newLeague = that.league.concat(result.data);
                 }
                 that.$emit('setLeague', newLeague, payload.leagueId);
             })
@@ -185,6 +186,10 @@ export default {
                 let errorData = JSON.parse(data.responseText);
                 that.error = errorData.error;
                 that.$emit('loading', false);
+            })
+            .always(function(data) {
+                let result = JSON.parse(data);
+                console.log(result.duration);
             });
         },
         loadMoreTeams(entry) {
