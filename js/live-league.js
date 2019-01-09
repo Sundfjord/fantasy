@@ -35,7 +35,7 @@ export default {
                         {{ team.real_rank }} <i class="fas" :class="getIconClass(team.movement)"></i>
                     </div>
                     <div class="siimple-table-cell">
-                        <strong>{{ team.entry_name }}</strong>
+                        <strong>{{ team.team_name }}</strong>
                         <span class="siimple-tag siimple-tag--primary margin-left-5" v-if="team.chip != ''">
                             {{ getActiveChipName(team) }}
                         </span><br>
@@ -50,7 +50,7 @@ export default {
                         </span>
                     </div>
                 </div>
-                <div class="siimple-table-row" v-show="team.expanded" v-for="pick in team.picks">
+                <div class="siimple-table-row" v-show="team.expanded && !pick.benched" v-for="pick in team.picks">
                     <div class="siimple-table-cell">{{ getPositionInString(pick.position) }}</div>
                     <div class="siimple-table-cell">
                         <strong>{{ pick.name }} {{ getCaptaincyRoleIfAny(pick) }} </strong><span v-if="pick.transferred_in_for"><i class="siimple--color-success fa fa-arrow-alt-circle-left"></i> <i class="siimple--color-error fa fa-arrow-alt-circle-right"></i> {{ pick.transferred_in_for }}</span>
@@ -286,12 +286,12 @@ export default {
             return "same";
         },
         getActiveChipName(team) {
-            if (team.chip == '') {
+            if (team.active_chip == '') {
                 return;
             }
 
             let chip = '';
-            switch(team.chip) {
+            switch(team.active_chip) {
                 case '3xc':
                     chip = 'Triple Captain';
                     break;
