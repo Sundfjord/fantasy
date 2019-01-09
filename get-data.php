@@ -2,7 +2,6 @@
 require_once(__DIR__.'/FantasyData.php');
 
 $data = $_GET;
-sleep(1);
 $fantasy = new FantasyData();
 
 if ($fantasy->isUpdating()) {
@@ -20,12 +19,12 @@ switch($data['info']) {
 		break;
 }
 
-if (!$result) {
+if ($fantasy->errorMessage) {
 	header('HTTP/1.1 422 Unprocessable Entity');
-	echo json_encode(['error' => $fantasy->errorMessage]);
+	$result['error'] = $fantasy->errorMessage;
 }
 
 $duration = microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'];
-$result['duration'] = $duration;//date('u', $duration);
+$result['duration'] = $duration;
 
 echo json_encode($result);

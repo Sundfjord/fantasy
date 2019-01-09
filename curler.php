@@ -22,7 +22,7 @@ class Curler
             if (!($result = curl_exec($curl))) {
                 $attempts++;
             }
-        } while (!$result && $attempts <= self::FANTASY_ATTEMPTS_LIMIT);
+        } while (!$result && $attempts <= self::CURL_ATTEMPTS_LIMIT);
 
         if (!$result) {
             $this->errorMessage = 'Unable to communicate with Fantasy server, please try again later';
@@ -73,5 +73,10 @@ class Curler
         }
 
         return $result;
+    }
+
+    public function hasError()
+    {
+        return $this->errorMessage;
     }
 }

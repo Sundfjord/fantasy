@@ -26,7 +26,7 @@
     	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0" />
         <title>Fantasy Checker</title>
         <link rel="stylesheet" type="text/css" href="/fantasy/css/siimple.min.css" />
-        <link rel="stylesheet" type="text/css" href="/fantasy/css/style.css" />
+        <link rel="stylesheet" type="text/css" href="/fantasy/css/style.css?v=<?php echo str_shuffle('abdefghijklmnopqrstuxyz1234567890') ?>" />
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
         <script src="https://unpkg.com/tippy.js@3/dist/tippy.all.min.js"></script>
         <script src="https://code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=" crossorigin="anonymous"></script>

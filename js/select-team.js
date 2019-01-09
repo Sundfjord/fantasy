@@ -43,24 +43,35 @@
                 return;
             }
 
-            this.$emit('loading', true);
+            this.$emit('loading');
             var payload = {
                 teamId: parseInt(this.teamID),
                 info: 'team'
             };
 
             var that = this;
-            $.get('/fantasy/get-data.php', payload)
+            $.ajax({
+                url: '/fantasy/get-data.php',
+                data: payload,
+                timeout: 20000
+            })
             .done(function(data) {
                 let result = JSON.parse(data);
                 that.$emit('setTeam', result.data);
             })
-            .fail(function(data) {
-                let errorData = JSON.parse(data.responseText);
-                that.error = errorData.error;
-                that.$emit('loading', false);
+            .fail(function(error) {
+                if (error.statusText == "timeout") {
+                    that.$emit('showError', 'Unable to fetch Fantasy data. Please try again.');
+                    return;
+                }
+
+                let errorData = JSON.parse(error.responseText);
+                that.$emit('showError', errorData.error);
             })
             .always(function(data) {
+                if (typeof data == "object") {
+                    return;
+                }
                 let result = JSON.parse(data);
                 console.log(result.duration);
             });

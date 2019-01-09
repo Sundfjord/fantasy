@@ -6,7 +6,12 @@ import LiveLeague from './live-league.js';
 export default {
 	template: `
 		<div>
-			<div class="siimple-spinner siimple-spinner--dark siimple-spinner--large loading-spinner" v-show="loading"></div>
+			<div class="siimple-spinner siimple-spinner--dark siimple-spinner--large fixed-content loading-spinner" v-show="loading"></div>
+			<transition name="fade">
+				<div class="siimple-alert siimple-alert--error fixed-content general-error" v-if="error">
+					{{ error }}
+				</div>
+			</transition>
 			<div class="siimple-content siimple-content--extra-large" v-if="unsupported">
 				<div class="siimple-grid">
 					<div class="siimple-grid-col--12">
@@ -29,14 +34,16 @@ export default {
 					</div>
 				</div>
 			</div>
-			<div class="siimple-grid" :class="{loading: loading}" v-if="active">
+			<div class="siimple-grid" :class="{loading: loading || error}" v-if="active">
 				<team-select
 					v-if="!team"
+					@showError="showError"
 					@loading="toggleLoading"
 					@setTeam="setTeam">
 				</team-select>
 				<league-select
 					v-if="team && !league"
+					@showError="showError"
 					@loading="toggleLoading"
 					@setLeague="setLeague"
 					:team="team"
@@ -44,6 +51,7 @@ export default {
 				</league-select>
 				<live-league
 					v-if="team && league"
+					@showError="showError"
 					@loading="toggleLoading"
 					@setLeague="setLeague"
 					:team="team"
@@ -69,11 +77,12 @@ export default {
 			team: null,
 			leagues: null,
 			league: null,
-			leagueId: null
+			leagueId: null,
+			error: ''
 		}
 	},
 	mounted() {
-		this.active = !this.countdown;
+		this.active = true //!this.countdown;
 		this.baseURL = 'http://' + preloaded.baseURL + '/fantasy';
 		if (preloaded.teamData) {
 			this.setTeam(preloaded.teamData);
@@ -83,8 +92,8 @@ export default {
 		}
 	},
 	methods: {
-		toggleLoading(loading) {
-			this.loading = loading;
+		toggleLoading() {
+			this.loading = !this.loading;
 		},
 		setTeam(data) {
 			this.team = data.entry;
@@ -126,6 +135,14 @@ export default {
 		pushNewURL(url) {
 			history.pushState('', '', url);
 		},
+		showError(errorMessage) {
+			this.loading = false;
+			this.error = errorMessage;
+			var that = this;
+			setTimeout(function() {
+				that.error = false;
+			}, 5000);
+		}
 	},
 
 	components: {

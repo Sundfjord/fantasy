@@ -157,7 +157,7 @@ export default {
                 this.isLoadingMoreTeams = true;
                 page = Math.ceil((this.league.length + 50) / 50);
             } else {
-                this.$emit('loading', true);
+                this.$emit('loading');
                 page = [];
                 for (var i = 1; i <= Math.ceil(this.league.length / 50); i++) {
                     page.push(i);
@@ -173,7 +173,11 @@ export default {
             };
 
             var that = this;
-            $.get('/fantasy/get-data.php', payload)
+            $.ajax({
+                url: '/fantasy/get-data.php',
+                data: payload,
+                timeout: 10000
+            })
             .done(function(data) {
                 let result = JSON.parse(data);
                 let newLeague = result.data;
@@ -182,15 +186,23 @@ export default {
                 }
                 that.$emit('setLeague', newLeague, payload.leagueId);
             })
-            .fail(function(data) {
-                let errorData = JSON.parse(data.responseText);
-                that.error = errorData.error;
-                that.$emit('loading', false);
+            .fail(function(error) {
+                if (error.statusText == "timeout") {
+                    that.$emit('showError', 'Unable to fetch Fantasy data. Please try again.');
+                    return;
+                }
+
+                let errorData = JSON.parse(error.responseText);
+                that.$emit('showError', errorData.error);
             })
             .always(function(data) {
+                if (typeof data == "object") {
+                    return;
+                }
                 let result = JSON.parse(data);
                 console.log(result.duration);
             });
+
         },
         loadMoreTeams(entry) {
             if (!entry[0].isIntersecting || this.$parent.isLoadingMoreTeams || !this.hasMoreTeamsToShow) {
