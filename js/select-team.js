@@ -30,10 +30,6 @@
                 this.error = '';
                 return true;
             }
-            if (!this.teamID.match(/^\d+$/)) {
-                this.error = 'Only numbers are allowed in this field';
-                return false;
-            }
 
             this.error = '';
             return true;
@@ -41,6 +37,17 @@
         findTeam() {
             if (this.error.length || this.teamID == '') {
                 return;
+            }
+
+            if (isNaN(this.teamID)) {
+                // Check if input is a parseable URL.
+                var team = this.teamID.split('/');
+                for (var x in team) {
+                    if (!isNaN(team[x]) && team[x] != '') {
+                        this.teamID = parseInt(team[x]);
+                        break;
+                    }
+                }
             }
 
             this.$emit('loading');
@@ -57,6 +64,9 @@
             })
             .done(function(data) {
                 let result = JSON.parse(data);
+                if (!result.data) {
+                    that.error = 'Unable to find a team with this ID or URL';
+                }
                 that.$emit('setTeam', result.data);
             })
             .fail(function(error) {
