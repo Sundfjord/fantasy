@@ -82,7 +82,7 @@ export default {
 		}
 	},
 	mounted() {
-		this.active = true //!this.countdown;
+		this.active = preloaded.baseURL == 'localhost' ? true : !this.countdown;
 		this.baseURL = 'http://' + preloaded.baseURL + '/fantasy';
 		if (preloaded.teamData) {
 			this.setTeam(preloaded.teamData);
