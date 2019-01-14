@@ -30,7 +30,7 @@ export default {
                 </div>
             </div>
             <div class="siimple-table-body" v-for="(team, index) in newLeagueTable">
-                <div class="siimple-table-row">
+                <div class="siimple-table-row" :class="{'siimple-table-row-selected': team.isSelectedTeam}">
                     <div class="siimple-table-cell">
                         {{ team.real_rank }} <i class="fas" :class="getIconClass(team.movement)"></i>
                     </div>
@@ -129,6 +129,7 @@ export default {
             for (var x in this.league) {
                 this.league[x].real_rank = parseInt(x) + 1;
                 this.league[x].movement = this.getMovement(this.league[x]);
+                this.league[x].isSelectedTeam = this.league[x].entry == this.team.id;
             }
 
             return this.league;

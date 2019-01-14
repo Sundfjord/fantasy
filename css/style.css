@@ -165,6 +165,11 @@ a {
 	border-bottom: 0 !important;
 }
 
+.siimple-table-row-selected {
+	/*background-color: #38003C !important;*/
+	/*color: #fff;*/
+}
+
 .siimple-table-cell {
 	padding: 5px 10px;
 	vertical-align: middle;
