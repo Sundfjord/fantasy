@@ -30,10 +30,6 @@
                 this.error = '';
                 return true;
             }
-            if (!this.teamID.match(/^\d+$/)) {
-                this.error = 'Only numbers are allowed in this field';
-                return false;
-            }
 
             this.error = '';
             return true;
@@ -43,22 +39,51 @@
                 return;
             }
 
-            this.$emit('loading', true);
+            if (isNaN(this.teamID)) {
+                // Check if input is a parseable URL.
+                var team = this.teamID.split('/');
+                for (var x in team) {
+                    if (!isNaN(team[x]) && team[x] != '') {
+                        this.teamID = parseInt(team[x]);
+                        break;
+                    }
+                }
+            }
+
+            this.$emit('loading');
             var payload = {
                 teamId: parseInt(this.teamID),
                 info: 'team'
             };
 
             var that = this;
-            $.get('/fantasy/get-data.php', payload)
-            .done(function(data) {
-                data = JSON.parse(data);
-                that.$emit('setTeam', data);
+            $.ajax({
+                url: '/fantasy/get-data.php',
+                data: payload,
+                timeout: 10000
             })
-            .fail(function(data) {
-                let errorData = JSON.parse(data.responseText);
-                that.error = errorData.error;
-                that.$emit('loading', false);
+            .done(function(data) {
+                let result = JSON.parse(data);
+                if (!result.data) {
+                    that.error = 'Unable to find a team with this ID or URL';
+                }
+                that.$emit('setTeam', result.data);
+            })
+            .fail(function(error) {
+                if (error.statusText == "timeout") {
+                    that.$emit('showError', 'Unable to fetch Fantasy data. Please try again.');
+                    return;
+                }
+
+                let errorData = JSON.parse(error.responseText);
+                that.$emit('showError', errorData.error);
+            })
+            .always(function(data) {
+                if (typeof data == "object") {
+                    return;
+                }
+                let result = JSON.parse(data);
+                console.log(result.duration);
             });
         }
     }

@@ -6,7 +6,12 @@ import LiveLeague from './live-league.js';
 export default {
 	template: `
 		<div>
-			<div class="siimple-spinner siimple-spinner--dark siimple-spinner--large loading-spinner" v-show="loading"></div>
+			<div class="siimple-spinner siimple-spinner--dark siimple-spinner--large fixed-content loading-spinner" v-show="loading"></div>
+			<transition name="fade">
+				<div class="siimple-alert siimple-alert--error fixed-content general-error" v-if="error">
+					{{ error }}
+				</div>
+			</transition>
 			<div class="siimple-content siimple-content--extra-large" v-if="unsupported">
 				<div class="siimple-grid">
 					<div class="siimple-grid-col--12">
@@ -29,24 +34,16 @@ export default {
 					</div>
 				</div>
 			</div>
-			<div class="siimple-grid" :class="{loading: loading}" v-if="active">
-				<div class="siimple-grid-row margin-bottom-10">
-					<div class="siimple-btn siimple-btn--grey margin-bottom-0" @click="goBack" v-show="team"><span class="fas fa-arrow-left"></span> Back</div>
-					<div class="siimple-btn siimple-btn--primary siimple--float-right" v-show="team && league" @click="update"><span class="fas fa-sync-alt margin-right-5"></span> Update</div>
-					<!--<div class="siimple-switch siimple--float-right margin-right-30">
-					    <input type="checkbox" id="mySwitch" checked>
-					    <label for="mySwitch"></label>
-					    <div></div>
-					</div>-->
-					<!-- <img v-show="league" height="30" class="bw margin-top-5" title="Automatically updating league results" src="/fantasy/media/live.gif"> -->
-				</div>
+			<div class="siimple-grid" :class="{loading: loading || error}" v-if="active">
 				<team-select
 					v-if="!team"
+					@showError="showError"
 					@loading="toggleLoading"
 					@setTeam="setTeam">
 				</team-select>
 				<league-select
 					v-if="team && !league"
+					@showError="showError"
 					@loading="toggleLoading"
 					@setLeague="setLeague"
 					:team="team"
@@ -54,7 +51,9 @@ export default {
 				</league-select>
 				<live-league
 					v-if="team && league"
+					@showError="showError"
 					@loading="toggleLoading"
+					@setLeague="setLeague"
 					:team="team"
 					:league="league">
 				</live-league>
@@ -72,18 +71,18 @@ export default {
   	props: ['unsupported', 'updating', 'countdown'],
 	data() {
 		return {
+			baseURL: '',
 			active: true,
+			loading: false,
 			team: null,
 			leagues: null,
 			league: null,
 			leagueId: null,
-			loading: false,
-			baseURL: '',
-			bonus: true
+			error: ''
 		}
 	},
 	mounted() {
-		this.active = !this.countdown;
+		this.active = preloaded.baseURL == 'localhost' ? true : !this.countdown;
 		this.baseURL = 'http://' + preloaded.baseURL + '/fantasy';
 		if (preloaded.teamData) {
 			this.setTeam(preloaded.teamData);
@@ -93,8 +92,8 @@ export default {
 		}
 	},
 	methods: {
-		toggleLoading(loading) {
-			this.loading = loading;
+		toggleLoading() {
+			this.loading = !this.loading;
 		},
 		setTeam(data) {
 			this.team = data.entry;
@@ -105,39 +104,19 @@ export default {
 		},
 		setLeague(data, leagueId) {
 			this.league = data;
-			this.leagueId = leagueId ? leagueId : data[0].league;
 			this.loading = false;
-			let url = this.baseURL + '?team=' + this.team.id + '&league=' + this.leagueId;
-			this.pushNewURL(this.baseURL + '?team=' + this.team.id + '&league=' + this.leagueId);
-		},
-		update() {
-			this.loading = true;
-			var payload = {
-				teamID: this.team.id,
-			    leagueId: parseInt(this.leagueId),
-			    info: 'live'
-			};
-
-			var that = this;
-			$.get('/fantasy/get-data.php', payload)
-			.done(function(data) {
-			    that.setLeague(JSON.parse(data), payload.leagueId);
-			})
-			.fail(function(data) {
-			    let errorData = JSON.parse(data.responseText);
-			    that.error = errorData.error;
-			    that.loading = false;
-			});
+			let url = this.baseURL + '?team=' + this.team.id + '&league=' + data[0].league;
+			this.pushNewURL(url);
 		},
 		poll() {
 			var that = this;
 			setTimeout(function() {
-				if (!that.league || !that.leagueId) {
+				if (!that.league || !that.league[0].league) {
 					return;
 				}
 
 				this.update();
-		  	}, 30000);
+			}, 30000);
 		},
 		goBack() {
 			if (this.league) {
@@ -155,6 +134,14 @@ export default {
 		},
 		pushNewURL(url) {
 			history.pushState('', '', url);
+		},
+		showError(errorMessage) {
+			this.loading = false;
+			this.error = errorMessage;
+			var that = this;
+			setTimeout(function() {
+				that.error = false;
+			}, 5000);
 		}
 	},
 

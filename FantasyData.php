@@ -134,112 +134,161 @@ class FantasyData
         return $this->curl->get($this->teamURL, true);
     }
 
-    public function getLeagueData($leagueId)
+    public function getLeagueData($leagueId, $page = 1)
     {
         // Get current gameweek
         $currentEvent = $this->staticData['current-event'];
 
-        // Fetch the live points for fixtures and players
-        $pointsData = $this->curl->get("https://fantasy.premierleague.com/drf/event/$currentEvent/live", true);
-
         // For every team in the given league, generate URLs from which to get individual team's points data
-        $leagueData = $this->curl->get(self::FANTASY_CLASSIC_LEAGUE_URL . $leagueId, true);
-        $urls = [];
-        foreach ($leagueData['standings']['results'] as $index => $team) {
-            $urls[] = "https://fantasy.premierleague.com/drf/entry/". $team["entry"] . "/event/$currentEvent/picks";
+        $leagueURLs = [];
+        if (is_numeric($page)) {
+            // Fetch specific page (lazy loading)
+            $leagueURLs[] = self::FANTASY_CLASSIC_LEAGUE_URL . $leagueId . '?phase=1&le-page=1&ls-page=' . $page;
+        } else {
+            // Fetch a set of pages
+            for ($i = 1; $i <= count($page); $i++) {
+                $leagueURLs[] = self::FANTASY_CLASSIC_LEAGUE_URL . $leagueId . '?phase=1&le-page=1&ls-page=' . $i;
+            }
         }
-        // Perform fetch of team points data
-        $teamData = $this->curl->getMulti($urls, true);
+
+        $leagueData = $this->curl->getMulti($leagueURLs, true);
+
+        $teams = [];
+        foreach ($leagueData as $page) {
+            foreach ($page['standings']['results'] as $index => $team) {
+                $teams[$team['entry']] = [
+                    'entry' => $team['entry'],
+                    'team_name' => $team['entry_name'],
+                    'league' => $leagueId,
+                    'player_name' => $team['player_name'],
+                    'total' => $team['total'],
+                    'is_last' => !$page['standings']['has_next'] && $index == (count($page['standings']['results'])-1),
+                    'url' => "https://fantasy.premierleague.com/drf/entry/{$team['entry']}/event/$currentEvent/picks",
+                    'last_rank' => $team['last_rank'],
+                    'real_event_total' => 0,
+                    'event_total' => $team['event_total'],
+                    'real_total' => $team['total'] - $team['event_total'],
+                    'expanded' => false,
+                ];
+            }
+        }
+
+        // Perform fetch of gameweek data for each team in chosen league
+        $gameweekTeamData = $this->getGameweekDataForTeamsInLeague($teams);
+        // Perform fetch of live gameweek information about player points and fixtures
+        $gameweekPointsData = $this->curl->get("https://fantasy.premierleague.com/drf/event/$currentEvent/live", true);
+        // Perform fetch of gameweek bonus points
+        $gameWeekBonusPoints = $this->getBonusPointsData($gameweekPointsData['fixtures']);
+        // Perform fetch of gameweek transfers made by each team in chosen league
+        $gameweekTransfersData = $this->getTransfersData($teams);
 
         // Loop through each team's player picks
-        $teamResults = [];
-        foreach ($teamData as $index => $team) {
-            $playerData = [];
+        foreach ($gameweekTeamData as $teamId => $team) {
+            $picks = $team['picks'];
             // Add some additional data about each player in currently iterated team
-            foreach ($team['picks'] as $key => $player) {
-                // Only calculate active players (not benched), unless Bench Boost is active
-                if ($key >= 11 && $team['active_chip'] != 'bboost') {
-                    break;
-                }
-                $playerId = $player['element'];
-                $playerData[$playerId] = [
-                    'id' => $playerId,
-                    'firstName' => $this->playerData[$playerId]['first_name'],
-                    'secondName' => $this->playerData[$playerId]['second_name'],
-                    'name' => $this->playerData[$playerId]['web_name'],
-                    'fullName' => $this->playerData[$playerId]['first_name'] . ' ' . $this->playerData[$playerId]['second_name'],
-                    'cost' => $this->playerData[$playerId]['cost'],
-                    'position' => $this->playerData[$playerId]['position'],
+            foreach ($picks as $playerNumber => $player) {
+                $id = $player['element'];
+                $picks[$playerNumber] = [
+                    'id' => $id,
+                    'firstName' => $this->playerData[$id]['first_name'],
+                    'secondName' => $this->playerData[$id]['second_name'],
+                    'name' => $this->playerData[$id]['web_name'],
+                    'fullName' => $this->playerData[$id]['first_name'] . ' ' . $this->playerData[$id]['second_name'],
+                    'cost' => $this->playerData[$id]['cost'],
+                    'position' => $this->playerData[$id]['position'],
                     'multiplier' => $player['multiplier'],
-                    'activeCaptain' => $player['multiplier'] > 1,
                     'tripleCaptain' => $player['multiplier'] == 3,
                     'captain' => $player['is_captain'],
                     'viceCaptain' => $player['is_vice_captain'],
                     'points' => 0,
                     'bonus' => 0,
                     'bonus_provisional' => false,
-                    'breakdown' => $pointsData['elements'][$playerId]['explain'][0][0]
+                    'transferred_in_for' => false,
+                    'benched' => $playerNumber > 10 && $team['active_chip'] != 'bboost',
+                    'breakdown' => $gameweekPointsData['elements'][$id]['explain'][0][0],
                 ];
-            }
 
-            $teamPoints = 0;
-            $bonusPointsData = $this->getBonusPointsData($pointsData, array_keys($playerData));
-            foreach ($playerData as $id => $data) {
-                $player = $playerData[$id];
-                // Determine this player's current points, doubled or tripled if appropriate
-                $playerPoints = $pointsData['elements'][$id]['stats']['total_points'] * $data['multiplier'];
+                // Insert who this player was transferred in for if he was transferred in this gameweek
+                if (isset($gameweekTransfersData[$teamId])) {
+                    foreach ($gameweekTransfersData[$teamId] as $teamTransfers) {
+                        foreach ($teamTransfers as $in => $out) {
+                            if ($id == $in) {
+                                $picks[$playerNumber]['transferred_in_for'] = $this->playerData[$out]['web_name'];
+                            }
+                        }
+                    }
+                }
 
-                // Add this player's current points to team's and individual tally
-                $teamPoints += $playerPoints;
-                $playerData[$id]['points'] = $playerPoints;
+                if ($playerNumber > 10 and $team['active_chip'] != 'bboost') {
+                    continue;
+                }
+                // Determine this player's current points, doubled or tripled if captained or triple captained
+                // Add these points to team's and individual tally
+                $playerPoints = $gameweekPointsData['elements'][$id]['stats']['total_points'] * $player['multiplier'];
+                $gameweekTeamData[$teamId]['real_event_total'] += $playerPoints;
+                $picks[$playerNumber]['points'] = $playerPoints;
+
 
                 // No bonus points for this player, carry on
-                if (!isset($bonusPointsData[$id])) {
+                if (!isset($gameWeekBonusPoints[$id])) {
                     continue;
                 }
 
                 // Add bonus points
-                $player['bonus'] = $bonusPointsData[$id]['points'];
-                $player['bonus_provisional'] = false;
-                // If bonus points are provisional, add to team and individual tally
-                if (!$bonusPointsData[$id]['confirmed']) {
-                    $playerBonusPoints = $bonusPointsData[$id]['points'] * $data['multiplier'];
-                    // Update status to reflect that bonus points are unconfirmed
-                    $player['bonus_provisional'] = true;
-                    // Add this player's current bonus points to team's and individual tally
-                    $teamPoints += $playerBonusPoints;
-                    $player['points'] += $playerBonusPoints;
+                $picks[$playerNumber]['bonus'] = $gameWeekBonusPoints[$id]['points'];
+                $picks[$playerNumber]['bonus_provisional'] = false;
+
+                // These bonus points are confirmed, no need to add to team and individual tally
+                if ($gameWeekBonusPoints[$id]['confirmed']) {
+                    continue;
                 }
+
+                $playerBonusPoints = $gameWeekBonusPoints[$id]['points'] * $player['multiplier'];
+                // Update status to reflect that bonus points are unconfirmed
+                $picks[$playerNumber]['bonus_provisional'] = true;
+                // Add this player's current bonus points to team's and individual tally
+                $gameweekTeamData[$teamId]['real_event_total'] += $playerBonusPoints;
+                $picks[$playerNumber]['points'] += $playerBonusPoints;
             }
 
-            $teamResults[$index]['points'] = $teamPoints;
-            $teamResults[$index]['picks'] = array_values($playerData);
-            $teamResults[$index]['chip'] = $team['active_chip'];
+            $gameweekTeamData[$teamId]['real_total'] = $gameweekTeamData[$teamId]['real_total'] + $gameweekTeamData[$teamId]['real_event_total'];
+            $gameweekTeamData[$teamId]['picks'] = $picks;
         }
 
-        $results = [];
-        foreach ($leagueData['standings']['results'] as $index => $team) {
-            $team['real_event_total'] = $teamResults[$index]['points'];
-            $team['real_total'] = ($team['total'] - $team['event_total'] + $team['real_event_total']);
-            $team['picks'] = $teamResults[$index]['picks'];
-            $team['chip'] = $teamResults[$index]['chip'];
-            $team['expanded'] = false;
-            $results[] = $team;
+        return array_values($gameweekTeamData);
+    }
+
+    private function getGameweekDataForTeamsInLeague($teams)
+    {
+        $urls = [];
+        foreach ($teams as $team) {
+            $urls[] = $team['url'];
         }
 
-        return $results;
+        $gameweekTeamData = $this->curl->getMulti($urls, true);
+        foreach ($gameweekTeamData as $gameweekTeam) {
+            $id = $gameweekTeam['entry_history']['entry'];
+            $teams[$id] = array_merge($teams[$id], [
+                'event_transfers' => $gameweekTeam['entry_history']['event_transfers'],
+                'event_transfers_cost' => $gameweekTeam['entry_history']['event_transfers_cost'],
+                'picks' => $gameweekTeam['picks'],
+                'active_chip' => $gameweekTeam['active_chip']
+            ]);
+        }
+
+        return $teams;
     }
 
     /**
      * Based on given gameweek data, determines which players are on for bonus points
      *
-     * @param  array $pointsData Information about the current gameweek
+     * @param  array $gameweekPointsData Information about the current gameweek
      * @return array
      */
-    private function getBonusPointsData($pointsData)
+    private function getBonusPointsData($fixtures)
     {
         $bonusPoints = [];
-        foreach ($pointsData['fixtures'] as $fixture) {
+        foreach ($fixtures as $fixture) {
             // Game hasn't started, carry on
             if (!$fixture['started']) {
                 continue;
@@ -276,8 +325,40 @@ class FantasyData
         return $bonusPoints;
     }
 
-    protected function pretty_dump($data)
+    protected function getTransfersData($teams)
+    {
+        $urls = [];
+        foreach ($teams as $id => $team) {
+            $urls[] = self::FANTASY_TEAM_URL . $id . '/transfers';
+        }
+
+        $currentEvent = $this->staticData['current-event'];
+        $transferData = $this->curl->getMulti($urls, true);
+        $transfers = [];
+        foreach ($transferData as $key => $team) {
+            if (empty($team['history'])) {
+                continue;
+            }
+
+            $eventTransfers = [];
+            foreach (array_reverse($team['history']) as $history) {
+                if ($currentEvent > $history['event']) {
+                    break;
+                }
+
+                $eventTransfers[] = [$history['element_in'] => $history['element_out']];
+            }
+            $transfers[$team['entry']['id']] = $eventTransfers;
+        }
+
+        return $transfers;
+    }
+
+    protected function dump($data, $die = false)
     {
         echo '<pre>';var_dump($data);echo '</pre>';
+        if ($die) {
+            die();
+        }
     }
 }

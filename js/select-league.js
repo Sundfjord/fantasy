@@ -1,6 +1,16 @@
 export default {
     template: `
         <div>
+            <div class="siimple-grid-row margin-bottom-10">
+                <div class="siimple-btn siimple-btn--grey margin-bottom-0" @click="goBack" v-show="team"><span class="fas fa-arrow-left"></span> Back</div>
+                <!--<div class="siimple-switch siimple--float-right margin-right-30">
+                    <input type="checkbox" id="mySwitch" checked>
+                    <label for="mySwitch"></label>
+                    <div>
+                </div>
+                </div>-->
+                <!-- <img v-show="league" height="30" class="bw margin-top-5" title="Automatically updating league results" src="/fantasy/media/live.gif"> -->
+            </div>
             <div class="siimple-grid-row">
                 <h1 class="margin-bottom-0">Select League for {{ team.name }} <span class="siimple--color-light">*</span></h1>
                 <small class="siimple-small">* Will only summarise the top 50.</small>
@@ -26,23 +36,43 @@ export default {
     props: ['team', 'leagues'],
     methods: {
         getLeagueData(leagueId) {
-            this.$emit('loading', true);
+            this.$emit('loading');
             var payload = {
                 teamID: this.team.id,
                 leagueId: leagueId,
-                info: 'live'
+                info: 'live',
+                page: 1
             };
 
             var that = this;
-            $.get('/fantasy/get-data.php', payload)
-            .done(function(data) {
-                that.$emit('setLeague', JSON.parse(data), leagueId);
+            $.ajax({
+                url: '/fantasy/get-data.php',
+                data: payload,
+                timeout: 10000
             })
-            .fail(function(data) {
-                let errorData = JSON.parse(data.responseText);
-                that.error = errorData.error;
-                that.$emit('loading', false);
+            .done(function(data) {
+                let result = JSON.parse(data);
+                that.$emit('setLeague', result.data, leagueId);
+            })
+            .fail(function(error) {
+                if (error.statusText == "timeout") {
+                    that.$emit('showError', 'Unable to fetch Fantasy data. Please try again.');
+                    return;
+                }
+
+                let errorData = JSON.parse(error.responseText);
+                that.$emit('showError', errorData.error);
+            })
+            .always(function(data) {
+                if (typeof data == "object") {
+                    return;
+                }
+                let result = JSON.parse(data);
+                console.log(result.duration);
             });
-        }
+        },
+        goBack() {
+            this.$parent.goBack();
+        },
     }
 }
