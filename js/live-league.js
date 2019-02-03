@@ -188,6 +188,10 @@ export default {
                 that.$emit('setLeague', newLeague, payload.leagueId);
             })
             .fail(function(error) {
+                if (error.statusText == "Backend fetch failed") {
+                    that.update(more);
+                    return;
+                }
                 if (error.statusText == "timeout") {
                     that.$emit('showError', 'Unable to fetch Fantasy data. Please try again.');
                     return;
@@ -203,7 +207,6 @@ export default {
                 let result = JSON.parse(data);
                 console.log(result.duration);
             });
-
         },
         loadMoreTeams(entry) {
             if (!entry[0].isIntersecting || this.$parent.isLoadingMoreTeams || !this.hasMoreTeamsToShow) {
