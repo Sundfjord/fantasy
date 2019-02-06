@@ -75,6 +75,14 @@ class Curler
         return $result;
     }
 
+    protected function dump($data, $die = false)
+    {
+        echo '<pre>';var_dump($data);echo '</pre>';
+        if ($die) {
+            die();
+        }
+    }
+
     public function hasError()
     {
         return $this->errorMessage;
