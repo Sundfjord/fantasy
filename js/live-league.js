@@ -35,11 +35,11 @@ export default {
                         {{ team.real_rank }} <i class="fas" :class="getIconClass(team.movement)"></i>
                     </div>
                     <div class="siimple-table-cell">
-                        <strong>{{ team.team_name }}</strong>
-                        <span class="siimple-tag siimple-tag--primary margin-left-5" v-if="team.chip != ''">
+                        <strong class="block">{{ team.team_name }}</strong>
+                        <span class="block">{{ team.player_name }}</span>
+                        <span class="siimple-tag siimple-tag--primary" v-if="getActiveChipName(team)">
                             {{ getActiveChipName(team) }}
-                        </span><br>
-                        {{ team.player_name }}
+                        </span>
                     </div>
                     <div class="siimple-table-cell">{{ team.real_event_total }}</div>
                     <div class="siimple-table-cell">{{ team.real_total}}</div>
@@ -291,7 +291,7 @@ export default {
         },
         getActiveChipName(team) {
             if (team.active_chip == '') {
-                return;
+                return false;
             }
 
             let chip = '';
