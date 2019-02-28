@@ -67,8 +67,8 @@ export default {
 				</div>
 			</div>
 		</div>
-  	`,
-  	props: ['unsupported', 'updating', 'countdown'],
+	`,
+	props: ['unsupported', 'updating', 'countdown'],
 	data() {
 		return {
 			baseURL: '',
