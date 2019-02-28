@@ -291,11 +291,7 @@ export default {
         },
         getActiveChipName(team) {
             if (team.active_chip == '') {
-<<<<<<< HEAD
-                return;
-=======
                 return false;
->>>>>>> dev
             }
 
             let chip = '';
