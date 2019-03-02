@@ -99,7 +99,11 @@ class FantasyData
             return true;
         }
 
-        $data = $this->curl->get('https://fantasy.premierleague.com/drf/bootstrap-static', true);
+        $data = $this->staticData;
+        if (!$data) {
+            $data = $this->curl->get('https://fantasy.premierleague.com/drf/bootstrap-static', true);
+        }
+
         if (!$data) {
             $this->playerData = [];
             return true;
@@ -113,7 +117,8 @@ class FantasyData
                 'first_name' => $player['first_name'],
                 'second_name' => $player['second_name'],
                 'web_name' => $player['web_name'],
-                'cost' => number_format(($player['now_cost'] / 10), 1)
+                'team' => $player['team'],
+                'cost' => number_format(($player['now_cost'] / 10), 1),
             ];
         }
 
@@ -177,8 +182,10 @@ class FantasyData
         $gameweekTeamData = $this->getGameweekDataForTeamsInLeague($teams);
         // Perform fetch of live gameweek information about player points and fixtures
         $gameweekPointsData = $this->curl->get("https://fantasy.premierleague.com/drf/event/$currentEvent/live", true);
+        // Perform fetch of gameweek fixture schedule data
+        $gameweekFixturesData = $this->getFixtureData($gameweekPointsData['fixtures']);
         // Perform fetch of gameweek bonus points
-        $gameWeekBonusPoints = $this->getBonusPointsData($gameweekPointsData['fixtures']);
+        $gameweekBonusPoints = $this->getBonusPointsData($gameweekPointsData['fixtures']);
         // Perform fetch of gameweek transfers made by each team in chosen league
         $gameweekTransfersData = $this->getTransfersData($teams);
 
@@ -188,6 +195,7 @@ class FantasyData
             // Add some additional data about each player in currently iterated team
             foreach ($picks as $playerNumber => $player) {
                 $id = $player['element'];
+                $benched = $playerNumber > 10 and $team['active_chip'] != 'bboost';
                 $picks[$playerNumber] = [
                     'id' => $id,
                     'firstName' => $this->playerData[$id]['first_name'],
@@ -204,8 +212,9 @@ class FantasyData
                     'bonus' => 0,
                     'bonus_provisional' => false,
                     'transferred_in_for' => false,
-                    'benched' => $playerNumber > 10 && $team['active_chip'] != 'bboost',
+                    'benched' => $benched,
                     'breakdown' => $gameweekPointsData['elements'][$id]['explain'][0][0],
+                    'fixtures' => $gameweekFixturesData[$this->playerData[$id]['team']],
                 ];
 
                 // Insert who this player was transferred in for if he was transferred in this gameweek
@@ -219,35 +228,32 @@ class FantasyData
                     }
                 }
 
-                if ($playerNumber > 10 and $team['active_chip'] != 'bboost') {
-                    continue;
-                }
                 // Determine this player's current points, doubled or tripled if captained or triple captained
                 // Add these points to team's and individual tally
                 $playerPoints = $gameweekPointsData['elements'][$id]['stats']['total_points'] * $player['multiplier'];
-                $gameweekTeamData[$teamId]['real_event_total'] += $playerPoints;
+                $gameweekTeamData[$teamId]['real_event_total'] += !$benched ? $playerPoints : 0;
                 $picks[$playerNumber]['points'] = $playerPoints;
 
 
                 // No bonus points for this player, carry on
-                if (!isset($gameWeekBonusPoints[$id])) {
+                if (!isset($gameweekBonusPoints[$id])) {
                     continue;
                 }
 
                 // Add bonus points
-                $picks[$playerNumber]['bonus'] = $gameWeekBonusPoints[$id]['points'];
+                $picks[$playerNumber]['bonus'] = $gameweekBonusPoints[$id]['points'];
                 $picks[$playerNumber]['bonus_provisional'] = false;
 
                 // These bonus points are confirmed, no need to add to team and individual tally
-                if ($gameWeekBonusPoints[$id]['confirmed']) {
+                if ($gameweekBonusPoints[$id]['confirmed']) {
                     continue;
                 }
 
-                $playerBonusPoints = $gameWeekBonusPoints[$id]['points'] * $player['multiplier'];
+                $playerBonusPoints = $gameweekBonusPoints[$id]['points'] * $player['multiplier'];
                 // Update status to reflect that bonus points are unconfirmed
                 $picks[$playerNumber]['bonus_provisional'] = true;
                 // Add this player's current bonus points to team's and individual tally
-                $gameweekTeamData[$teamId]['real_event_total'] += $playerBonusPoints;
+                $gameweekTeamData[$teamId]['real_event_total'] += !$benched ? $playerBonusPoints : 0;
                 $picks[$playerNumber]['points'] += $playerBonusPoints;
             }
 
@@ -277,6 +283,34 @@ class FantasyData
         }
 
         return $teams;
+    }
+
+    /**
+     * Based on given gameweek data, returns an array of fixtures,
+     * each containing fixture status data
+     *
+     * The return array is keyed by team ID
+     *
+     * @param  array $fixtures
+     * @return array
+     */
+    private function getFixtureData($fixtures)
+    {
+        $teamFixtures = [];
+        $now = new DateTime('now');
+        foreach ($fixtures as $fixture) {
+            $fixtureData = [
+                'finished' => $fixture['finished_provisional'],
+                'started' => $fixture['started'],
+                'minutes' => $fixture['minutes'],
+                'time_until_kickoff' => $now->diff(new DateTime($fixture['kickoff_time']))->format('%hh %im')
+            ];
+
+            $teamFixtures[$fixture['team_h']][] = $fixtureData;
+            $teamFixtures[$fixture['team_a']][] = $fixtureData;
+        }
+
+        return $teamFixtures;
     }
 
     /**

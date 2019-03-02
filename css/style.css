@@ -228,6 +228,10 @@ a {
 	display: block;
 }
 
+.faded {
+	opacity: 0.7;
+}
+
 img.bw {
 	-webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
     filter: grayscale(100%);
