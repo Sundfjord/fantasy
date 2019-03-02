@@ -58,10 +58,10 @@ export default {
 					:league="league">
 				</live-league>
 			</div>
-			<div class="siimple-grid" v-else>
+			<div class="siimple-grid" v-if="countdown > 0">
 				<div class="siimple-grid-row">
 					<countdown
-						@activate="active = true"
+						@activate="setActive"
 						:countdown="countdown">
 					</countdown>
 				</div>
@@ -72,7 +72,7 @@ export default {
 	data() {
 		return {
 			baseURL: '',
-			active: true,
+			active: false,
 			loading: false,
 			team: null,
 			leagues: null,
@@ -82,7 +82,13 @@ export default {
 		}
 	},
 	mounted() {
-		this.active = preloaded.baseURL == 'localhost' ? true : !this.countdown;
+		this.active = !this.countdown;
+		if (preloaded.baseURL == 'localhost') {
+			this.active = true;
+		}
+		if (this.updating) {
+			this.active = false;
+		}
 		this.baseURL = 'http://' + preloaded.baseURL + '/fantasy';
 		if (preloaded.teamData) {
 			this.setTeam(preloaded.teamData);
@@ -94,6 +100,15 @@ export default {
 	methods: {
 		toggleLoading() {
 			this.loading = !this.loading;
+		},
+		setActive() {
+			this.active = !this.countdown;
+			if (preloaded.baseURL == 'localhost') {
+				this.active = true;
+			}
+			if (this.updating) {
+				this.active = false;
+			}
 		},
 		setTeam(data) {
 			this.team = data.entry;
