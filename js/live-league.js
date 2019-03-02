@@ -4,12 +4,14 @@ export default {
     <div class="siimple-grid-row margin-bottom-10">
         <div class="siimple-btn siimple-btn--grey margin-bottom-0" @click="goBack" v-show="team"><span class="fas fa-arrow-left"></span> Back</div>
         <div class="siimple-btn siimple-btn--primary siimple--float-right" v-show="team && league" @click="update"><span class="fas fa-sync-alt margin-right-5"></span> Update</div>
-        <!--<div class="siimple-switch siimple--float-right margin-right-30">
-            <input type="checkbox" id="mySwitch" checked>
-            <label for="mySwitch"></label>
-            <div>
-        </div>
-        </div>-->
+        <span class="margin-left-10">
+            <div class="siimple-switch siimple-switch--success">
+                <input type="checkbox" id="mySwitch" v-model="showBench">
+                <label for="mySwitch"></label>
+                <div></div>
+            </div>
+            <span>Show bench</span>
+        </span>
         <!-- <img v-show="league" height="30" class="bw margin-top-5" title="Automatically updating league results" src="/fantasy/media/live.gif"> -->
     </div>
     <div class="siimple-grid-row-fullwidth">
@@ -18,6 +20,7 @@ export default {
                 <div class="siimple-table-row">
                     <div class="siimple-table-cell">Rank</div>
                     <div class="siimple-table-cell">Team & Manager</div>
+                    <div class="siimple-table-cell"></div>
                     <div class="siimple-table-cell siimple-table-cell-sortable" title="Live Gameweek Points" @click="sort('real_event_total')">
                         LGWP<i v-show="sortBy == 'real_event_total' && sortDirection == 'asc'" class="fas fa-sort-up"></i>
                         <i v-show="sortBy == 'real_event_total' && sortDirection == 'desc'" class="fas fa-sort-down"></i>
@@ -41,6 +44,7 @@ export default {
                             {{ getActiveChipName(team) }}
                         </span>
                     </div>
+                    <div class="siimple-table-cell"></div>
                     <div class="siimple-table-cell">{{ team.real_event_total }}</div>
                     <div class="siimple-table-cell">{{ team.real_total}}</div>
                     <div class="siimple-table-cell siimple--text-center clickable" style="border-left: 1px solid #cbd8e6;" @click="toggleDetails(team.entry)">
@@ -50,10 +54,16 @@ export default {
                         </span>
                     </div>
                 </div>
-                <div class="siimple-table-row" v-show="team.expanded && !pick.benched" v-for="pick in team.picks">
-                    <div class="siimple-table-cell">{{ getPositionInString(pick.position) }}</div>
+                <div class="siimple-table-row" :class="{'faded': pick.benched}" v-show="team.expanded && (!pick.benched || showBench)" v-for="pick in team.picks">
+                    <div class="siimple-table-cell">{{ getPositionInString(pick.position, pick.benched) }}</div>
                     <div class="siimple-table-cell">
                         <strong>{{ pick.name }} {{ getCaptaincyRoleIfAny(pick) }} </strong><span v-if="pick.transferred_in_for"><i class="siimple--color-success fa fa-arrow-alt-circle-left"></i> <i class="siimple--color-error fa fa-arrow-alt-circle-right"></i> {{ pick.transferred_in_for }}</span>
+                    </div>
+                    <div class="siimple-table-cell">
+                        <span class="siimple-tag" :class="getFixtureFormat(fixture, 'class')" v-for="fixture in pick.fixtures">
+                            <i class="fas" :class="getFixtureFormat(fixture, 'icon')"></i>
+                            {{ getFixtureFormat(fixture, 'text') }}
+                        </span>
                     </div>
                     <div class="siimple-table-cell">
                         <span class="siimple-table-cell-sortable open-modal" @click="setModalContent(pick)">
@@ -110,6 +120,7 @@ export default {
                 name: '',
                 content: {}
             },
+            showBench: true
         }
     },
     mounted() {
@@ -250,19 +261,31 @@ export default {
 
             this.sortDirection = direction;
         },
-        getPositionInString(position) {
+        getPositionInString(position, benched) {
+            var shortPosition = '';
             switch (position) {
                 case 1:
-                    return 'GK';
+                    var shortPosition = 'GK';
+                    break;
                 case 2:
-                    return 'DEF';
+                    var shortPosition = 'DEF';
+                    break;
                 case 3:
-                    return 'MID';
+                    var shortPosition = 'MID';
+                    break;
                 case 4:
-                    return 'FWD';
+                    var shortPosition = 'FWD';
+                    break;
                 default:
-                    return '';
+                    shortPosition = '';
+                    break;
             }
+
+            if (benched) {
+                shortPosition = shortPosition + ' (SUB)';
+            }
+
+            return shortPosition;
         },
         getCaptaincyRoleIfAny(pick) {
             if (pick.viceCaptain) {
@@ -311,6 +334,33 @@ export default {
             }
 
             return chip += ' Played';
+        },
+        getFixtureFormat(fixture, property) {
+            var data = {};
+            if (fixture.finished) {
+                data = {
+                    text: 'Finished',
+                    class: 'siimple-tag--navy',
+                    icon: 'fa-check'
+                };
+                return data[property];
+            }
+
+            if (!fixture.started) {
+                data = {
+                    text: 'Kickoff in ' + fixture.time_until_kickoff,
+                    class: 'siimple-tag--grey',
+                    icon: 'fa-clock'
+                };
+                return data[property];
+            }
+
+            data = {
+                text: 'Playing, ' + fixture.minutes+'\'',
+                class: 'siimple-tag--green',
+                icon: 'fa-stopwatch'
+            };
+            return data[property];
         },
         getIconClass(movement) {
             switch(movement) {
