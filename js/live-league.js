@@ -358,7 +358,7 @@ export default {
             }
 
             data = {
-                text: 'Playing' //fixture.minutes+'\'',
+                text: 'Playing', //fixture.minutes+'\'',
                 class: 'siimple-tag--green',
                 icon: 'fa-stopwatch'
             };
