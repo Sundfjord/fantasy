@@ -218,6 +218,23 @@ a {
 	}
 }
 
+/* MODAL */
+
+.siimple-modal-header {
+	border-bottom: none;
+}
+
+.siimple-modal-body {
+	width: 100%;
+}
+
+/* SWITCH */
+
+.siimple-switch-label {
+	display: inline-block;
+    margin-top: 7px;
+}
+
 /* UTILITY */
 
 .clickable {
