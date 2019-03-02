@@ -52,7 +52,7 @@ export default {
                         </span>
                     </div>
                 </div>
-                <div class="siimple-table-row" :class="{'faded': pick.benched}" v-show="team.expanded && (!pick.benched || showBench)" v-for="pick in team.picks">
+                <div class="siimple-table-row" :class="{'faded': pick.benched && team.active_chip != 'bboost'}" v-show="showPlayer(team, pick)" v-for="pick in team.picks">
                     <div class="siimple-table-cell">{{ getPositionInString(pick.position, pick.benched) }}</div>
                     <div class="siimple-table-cell siimple-table-cell--5">
                         <strong>{{ pick.name }} {{ getCaptaincyRoleIfAny(pick) }} </strong><span v-if="pick.transferred_in_for"><i class="siimple--color-success fa fa-arrow-alt-circle-up"></i> {{ pick.transferred_in_for }} <i class="siimple--color-error fa fa-arrow-alt-circle-down"></i></span>
@@ -256,6 +256,25 @@ export default {
             }
 
             this.sortDirection = direction;
+        },
+        showPlayer(team, pick) {
+            // Don't show if team is not expanded
+            if (!team.expanded) {
+                return false;
+            }
+
+            // Show if player is in starting XI
+            if (!pick.benched) {
+                return true;
+            }
+
+            // Always show bench if Bench Boost is active
+            if (this.active_chip == 'bboost') {
+                return true
+            }
+
+            // Let toggle value determine
+            return this.showBench;
         },
         getPositionInString(position, benched) {
             var shortPosition = '';
