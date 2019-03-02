@@ -2,17 +2,17 @@ export default {
     template: `
     <div>
     <div class="siimple-grid-row margin-bottom-10">
-        <div class="siimple-btn siimple-btn--grey margin-bottom-0" @click="goBack" v-show="team"><span class="fas fa-arrow-left"></span> Back</div>
+        <div class="siimple-btn siimple-btn--grey" @click="goBack" v-show="team"><span class="fas fa-arrow-left"></span> Back</div>
         <div class="siimple-btn siimple-btn--primary siimple--float-right" v-show="team && league" @click="update"><span class="fas fa-sync-alt margin-right-5"></span> Update</div>
-        <span class="margin-left-10">
-            <div class="siimple-switch siimple-switch--success">
-                <input type="checkbox" id="mySwitch" v-model="showBench">
-                <label for="mySwitch"></label>
-                <div></div>
-            </div>
-            <span>Show bench</span>
-        </span>
         <!-- <img v-show="league" height="30" class="bw margin-top-5" title="Automatically updating league results" src="/fantasy/media/live.gif"> -->
+    </div>
+    <div class="siimple-grid-row siimple-grid-col--sm-12">
+        <div class="siimple-switch siimple-switch--success">
+            <input type="checkbox" id="mySwitch" v-model="showBench">
+            <label for="mySwitch"></label>
+            <div></div>
+        </div>
+        <div class="siimple-switch-label">Show bench</div>
     </div>
     <div class="siimple-grid-row-fullwidth">
         <div class="siimple-table siimple-table--striped">
@@ -20,7 +20,6 @@ export default {
                 <div class="siimple-table-row">
                     <div class="siimple-table-cell">Rank</div>
                     <div class="siimple-table-cell">Team & Manager</div>
-                    <div class="siimple-table-cell"></div>
                     <div class="siimple-table-cell siimple-table-cell-sortable" title="Live Gameweek Points" @click="sort('real_event_total')">
                         LGWP<i v-show="sortBy == 'real_event_total' && sortDirection == 'asc'" class="fas fa-sort-up"></i>
                         <i v-show="sortBy == 'real_event_total' && sortDirection == 'desc'" class="fas fa-sort-down"></i>
@@ -37,16 +36,15 @@ export default {
                     <div class="siimple-table-cell">
                         {{ team.real_rank }} <i class="fas" :class="getIconClass(team.movement)"></i>
                     </div>
-                    <div class="siimple-table-cell">
+                    <div class="siimple-table-cell siimple-table-cell--5">
                         <strong class="block">{{ team.team_name }}</strong>
                         <span class="block">{{ team.player_name }}</span>
                         <span class="siimple-tag siimple-tag--primary" v-if="getActiveChipName(team)">
                             {{ getActiveChipName(team) }}
                         </span>
                     </div>
-                    <div class="siimple-table-cell"></div>
                     <div class="siimple-table-cell">{{ team.real_event_total }}</div>
-                    <div class="siimple-table-cell">{{ team.real_total}}</div>
+                    <div class="siimple-table-cell siimple-table-cell--5">{{ team.real_total}}</div>
                     <div class="siimple-table-cell siimple--text-center clickable" style="border-left: 1px solid #cbd8e6;" @click="toggleDetails(team.entry)">
                         <span style="font-size: 25px;">
                             <span v-if="team.expanded"><i class="fa fa-caret-up"></i></span>
@@ -56,21 +54,19 @@ export default {
                 </div>
                 <div class="siimple-table-row" :class="{'faded': pick.benched}" v-show="team.expanded && (!pick.benched || showBench)" v-for="pick in team.picks">
                     <div class="siimple-table-cell">{{ getPositionInString(pick.position, pick.benched) }}</div>
-                    <div class="siimple-table-cell">
-                        <strong>{{ pick.name }} {{ getCaptaincyRoleIfAny(pick) }} </strong><span v-if="pick.transferred_in_for"><i class="siimple--color-success fa fa-arrow-alt-circle-left"></i> <i class="siimple--color-error fa fa-arrow-alt-circle-right"></i> {{ pick.transferred_in_for }}</span>
-                    </div>
-                    <div class="siimple-table-cell">
-                        <span class="siimple-tag" :class="getFixtureFormat(fixture, 'class')" v-for="fixture in pick.fixtures">
-                            <i class="fas" :class="getFixtureFormat(fixture, 'icon')"></i>
-                            {{ getFixtureFormat(fixture, 'text') }}
-                        </span>
+                    <div class="siimple-table-cell siimple-table-cell--5">
+                        <strong>{{ pick.name }} {{ getCaptaincyRoleIfAny(pick) }} </strong><span v-if="pick.transferred_in_for"><i class="siimple--color-success fa fa-arrow-alt-circle-up"></i> {{ pick.transferred_in_for }} <i class="siimple--color-error fa fa-arrow-alt-circle-down"></i></span>
                     </div>
                     <div class="siimple-table-cell">
                         <span class="siimple-table-cell-sortable open-modal" @click="setModalContent(pick)">
                             <strong>{{ pick.points }}</strong> pts
                         </span>
                     </div>
-                    <div class="siimple-table-cell"></div>
+                    <div class="siimple-table-cell siimple-table-cell--5">
+                        <span class="siimple-tag" :class="getFixtureFormat(fixture, 'class')" v-for="fixture in pick.fixtures">
+                            <i class="fas" :class="getFixtureFormat(fixture, 'icon')"></i>
+                            {{ getFixtureFormat(fixture, 'text') }}
+                        </span></div>
                     <div class="siimple-table-cell"></div>
                 </div>
             </div>
@@ -282,7 +278,7 @@ export default {
             }
 
             if (benched) {
-                shortPosition = shortPosition + ' (SUB)';
+                // shortPosition = shortPosition + ' (SUB)';
             }
 
             return shortPosition;
@@ -348,7 +344,7 @@ export default {
 
             if (!fixture.started) {
                 data = {
-                    text: 'Kickoff in ' + fixture.time_until_kickoff,
+                    text: fixture.time_until_kickoff,
                     class: 'siimple-tag--grey',
                     icon: 'fa-clock'
                 };
@@ -356,7 +352,7 @@ export default {
             }
 
             data = {
-                text: 'Playing, ' + fixture.minutes+'\'',
+                text: fixture.minutes+'\'',
                 class: 'siimple-tag--green',
                 icon: 'fa-stopwatch'
             };
