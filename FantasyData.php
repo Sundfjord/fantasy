@@ -299,11 +299,15 @@ class FantasyData
         $teamFixtures = [];
         $now = new DateTime('now');
         foreach ($fixtures as $fixture) {
+            $timeUntilKickoff = $now->diff(new DateTime($fixture['kickoff_time']))->format('%dd %hh %im');
+            while (substr($timeUntilKickoff, 0, 1) === '0') {
+                $timeUntilKickoff = substr($timeUntilKickoff, 3);
+            }
             $fixtureData = [
                 'finished' => $fixture['finished_provisional'],
                 'started' => $fixture['started'],
                 'minutes' => $fixture['minutes'],
-                'time_until_kickoff' => $now->diff(new DateTime($fixture['kickoff_time']))->format('%hh %im')
+                'time_until_kickoff' => $timeUntilKickoff
             ];
 
             $teamFixtures[$fixture['team_h']][] = $fixtureData;
