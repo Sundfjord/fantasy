@@ -343,9 +343,15 @@ export default {
             }
 
             if (!fixture.started) {
+                var text = fixture.time_until_kickoff;
+                var tagClass = 'siimple-tag--grey';
+                if (!text) {
+                    text = 'Starting';
+                    tagClass = 'siimple-tag--green';
+                }
                 data = {
-                    text: fixture.time_until_kickoff,
-                    class: 'siimple-tag--grey',
+                    text: text,
+                    class: tagClass,
                     icon: 'fa-clock'
                 };
                 return data[property];
