@@ -228,6 +228,10 @@ class FantasyData
                     }
                 }
 
+                list($eligibleAutoSubOut, $eligibleAutoSubIn) = $this->getAutoSubStatus($picks[$playerNumber]);
+                $picks[$playerNumber]['eligible_sub_out'] = $eligibleAutoSubOut;
+                $picks[$playerNumber]['eligible_sub_in'] = $eligibleAutoSubIn;
+
                 // Determine this player's current points, doubled or tripled if captained or triple captained
                 // Add these points to team's and individual tally
                 $playerPoints = $gameweekPointsData['elements'][$id]['stats']['total_points'] * $player['multiplier'];
@@ -390,6 +394,43 @@ class FantasyData
         }
 
         return $transfers;
+    }
+
+    /**
+     * Determine whether the given pick is eligible for an
+     * automatical substitution in our out
+     *
+     * @param  array $pick
+     * @return array Consists of two values, whether player can be subbed out or in respectively
+     */
+    protected function getAutoSubStatus($pick)
+    {
+        $out = true;
+        $in = true;
+
+        // Determine if pick's team has played yet
+        $picksTeamHasPlayed = false;
+        foreach ($pick['fixtures'] as $fixture) {
+            if ($fixture['started']) {
+                $picksTeamHasPlayed = true;
+            }
+        }
+        // Pick has played in the GW, cannot be subbed out
+        if ($pick['breakdown']['minutes']['value']) {
+            $out = false;
+        } else if (!$picksTeamHasPlayed) {
+            // Pick's team hasn't played yet, so a bit early to sub him out
+            $out = false;
+        } else {
+            // Pick hasn't played and thus can't enter from bench
+            $in = false;
+        }
+        // Pick is in starting XI, cannot be subbed in from bench
+        if (!$pick['benched']) {
+            $in = false;
+        }
+
+        return [$out, $in];
     }
 
     protected function dump($data, $die = false)
