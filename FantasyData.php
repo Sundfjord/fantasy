@@ -13,6 +13,18 @@ class FantasyData
     const FANTASY_H2H_LEAGUE_URL = 'https://fantasy.premierleague.com/drf/leagues-h2h-standings/';
     const FANTASY_LEAGUES_URL = 'https://fantasy.premierleague.com/drf/leagues-entered/';
 
+    const POSITION_KEEPER = 1;
+    const POSITION_DEFENDER = 2;
+    const POSITION_MIDFIELDER = 3;
+    const POSITION_FORWARD = 4;
+
+    const POSITIONS_MINIMUM = [
+        self::POSITION_KEEPER => 1,
+        self::POSITION_DEFENDER => 3,
+        self::POSITION_MIDFIELDER => 2,
+        self::POSITION_FORWARD => 1,
+    ];
+
     /**
      * The chosen team's numeric ID
      *
@@ -192,6 +204,9 @@ class FantasyData
         // Loop through each team's player picks
         foreach ($gameweekTeamData as $teamId => $team) {
             $picks = $team['picks'];
+            $playingPositions = [];
+            $autoSubbableOut = [];
+            $autoSubbableIn = [];
             // Add some additional data about each player in currently iterated team
             foreach ($picks as $playerNumber => $player) {
                 $id = $player['element'];
@@ -228,9 +243,18 @@ class FantasyData
                     }
                 }
 
+                $pos = $picks[$playerNumber]['position'];
+                if (!$benched) {
+                    $playingPositions[$pos] = isset($playingPositions[$pos]) ? $playingPositions[$pos]+1 : 1;
+                }
+
                 list($eligibleAutoSubOut, $eligibleAutoSubIn) = $this->getAutoSubStatus($picks[$playerNumber]);
-                $picks[$playerNumber]['eligible_sub_out'] = $eligibleAutoSubOut;
-                $picks[$playerNumber]['eligible_sub_in'] = $eligibleAutoSubIn;
+                if ($eligibleAutoSubOut) {
+                    $autoSubbableOut[$playerNumber] = $pos;
+                }
+                if ($eligibleAutoSubIn) {
+                    $autoSubbableIn[$playerNumber] = $pos;
+                }
 
                 // Determine this player's current points, doubled or tripled if captained or triple captained
                 // Add these points to team's and individual tally
@@ -261,11 +285,40 @@ class FantasyData
                 $picks[$playerNumber]['points'] += $playerBonusPoints;
             }
 
+            $gameweekTeamData[$teamId]['playing_positions'] = $playingPositions;
+            $gameweekTeamData[$teamId]['autosubbable_out'] = $autoSubbableOut;
+            $gameweekTeamData[$teamId]['autosubbable_in'] = $autoSubbableIn;
+
             $gameweekTeamData[$teamId]['real_total'] = $gameweekTeamData[$teamId]['real_total'] + $gameweekTeamData[$teamId]['real_event_total'];
             $gameweekTeamData[$teamId]['picks'] = $picks;
+            if (!empty($autoSubbableOut) && !empty($autoSubbableIn)) {
+                $this->performAutoSubs($gameweekTeamData[$teamId]);
+            }
         }
 
         return array_values($gameweekTeamData);
+    }
+
+    protected function performAutoSubs(&$teamData)
+    {
+        foreach ($teamData['autosubbable_out'] as $number => $position) {
+            // Ensure we show correctly in rare cases where game has performed automatic substitutions
+            if ($teamData['picks'][$number]['benched']) {
+                continue;
+            }
+            // Check if an autosub would take team under minimum number of players for outgoing player's position
+            $canSubForAnyone = ($teamData['playing_positions'][$position]-1) >= self::POSITIONS_MINIMUM[$position];
+            foreach ($teamData['autosubbable_in'] as $inNumber => $inPosition) {
+                // If player going out can be subbed for anyone, or players play same position, perform autosub
+                if ($canSubForAnyone || $position == $inPosition) {
+                    $teamData['picks'][$number]['benched'] = true;
+                    $teamData['picks'][$inNumber]['benched'] = false;
+                    $teamData['real_event_total'] += $teamData['picks'][$inNumber]['points'];
+                    $teamData['real_total'] += $teamData['picks'][$inNumber]['points'];
+                    break;
+                }
+            }
+        }
     }
 
     private function getGameweekDataForTeamsInLeague($teams)
@@ -421,7 +474,7 @@ class FantasyData
         } else if (!$picksTeamHasPlayed) {
             // Pick's team hasn't played yet, so a bit early to sub him out
             $out = false;
-        } else {
+        } else if ($picksTeamHasPlayed) {
             // Pick hasn't played and thus can't enter from bench
             $in = false;
         }
