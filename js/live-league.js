@@ -142,7 +142,13 @@ export default {
             return this.league;
         },
         hasMoreTeamsToShow() {
-            return !this.league[this.league.length-1].is_last;
+            var hasLast = false;
+            for (var x in this.league) {
+                if (this.league[x].is_last) {
+                    hasLast = true;
+                }
+            }
+            return !hasLast;
         }
     },
     methods: {
