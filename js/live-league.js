@@ -243,8 +243,18 @@ export default {
         },
         setModalContent(pick) {
             var breakdown = [];
-            for (var x in pick.breakdown) {
-                var match = pick.breakdown[x][0];
+            if (typeof pick.formattedBreakdown != "undefined") {
+                this.modalContent = {
+                    title: pick.fullName,
+                    cost: pick.cost,
+                    content: pick.formattedBreakdown
+                };
+                return;
+            }
+
+            pick.formattedBreakdown = pick.breakdown;
+            for (var x in pick.formattedBreakdown) {
+                var match = pick.formattedBreakdown[x][0];
                 if (pick.bonus) {
                     // Try to ensure that we are attributing bonus points to the correct match in the GW
                     // by checking that the player has played in the game and that the fixture's minutes has no been updated
@@ -258,11 +268,11 @@ export default {
                 }
                 breakdown.push(match);
             }
-            pick.breakdown = breakdown;
+            pick.formattedBreakdown = breakdown;
             this.modalContent = {
                 title: pick.fullName,
                 cost: pick.cost,
-                content: pick.breakdown
+                content: pick.formattedBreakdown
             };
         },
         sort(field) {
