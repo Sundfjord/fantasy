@@ -165,9 +165,8 @@ a {
 	border-bottom: 0 !important;
 }
 
-.siimple-table-row-selected {
-	/*background-color: #38003C !important;*/
-	/*color: #fff;*/
+.siimple-table-row-striped {
+	background-color: rgba(238,242,247,.8);
 }
 
 .siimple-table-cell {

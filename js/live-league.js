@@ -83,7 +83,7 @@ export default {
                     <div class="siimple-modal-header-close" id="modal-close"></div>
                 </div>
                 <div class="siimple-modal-body padding-0">
-                    <div class="siimple-table siimple-table--striped margin-bottom-0">
+                    <div class="siimple-table margin-bottom-0">
                         <div class="siimple-table-header" style="padding: 10px; border-bottom: 0!important;">
                             <div class="siimple-table-row">
                                 <div class="siimple-table-cell">Statistic</div>
@@ -91,8 +91,13 @@ export default {
                                 <div class="siimple-table-cell">Points</div>
                             </div>
                         </div>
-                        <div class="siimple-table-body" v-for="(stats, type) in modalContent.content">
-                            <div class="siimple-table-row">
+                        <div class="siimple-table-body" v-for="(match, key) in modalContent.content">
+                            <div class="siimple-table-row siimple-table-row-striped" v-if="modalContent.content.length > 1">
+                                <div class="siimple-table-cell"><strong>Game {{ key + 1 }}</strong></div>
+                                <div class="siimple-table-cell"></div>
+                                <div class="siimple-table-cell"></div>
+                            </div>
+                            <div class="siimple-table-row" v-for="(stats, type) in match">
                                 <div class="siimple-table-cell">{{ stats.name }}</div>
                                 <div class="siimple-table-cell">{{ stats.value}}</div>
                                 <div class="siimple-table-cell">{{ stats.points }}</div>
@@ -237,17 +242,23 @@ export default {
             }
         },
         setModalContent(pick) {
-            if (pick.bonus) {
-                if (pick.bonus_provisional) {
-                    pick.breakdown['bonus'] = {
-                        name: 'Projected Bonus',
-                        value: pick.bonus,
-                        points: pick.bonus
-                    };
-                } else {
-                    pick.breakdown.bonus.name = 'Confirmed Bonus';
+            var breakdown = [];
+            for (var x in pick.breakdown) {
+                var match = pick.breakdown[x][0];
+                if (pick.bonus) {
+                    // Try to ensure that we are attributing bonus points to the correct match in the GW
+                    // by checking that the player has played in the game and that the fixture's minutes has no been updated
+                    if (pick.bonus_provisional && (match.minutes.value > 0 && !pick.fixtures[x].minutes)) {
+                        match.bonus = {
+                            name: 'Projected Bonus',
+                            value: pick.bonus,
+                            points: pick.bonus
+                        };
+                    }
                 }
+                breakdown.push(match);
             }
+            pick.breakdown = breakdown;
             this.modalContent = {
                 title: pick.fullName,
                 cost: pick.cost,

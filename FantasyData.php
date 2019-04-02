@@ -228,7 +228,7 @@ class FantasyData
                     'bonus_provisional' => false,
                     'transferred_in_for' => false,
                     'benched' => $benched,
-                    'breakdown' => $gameweekPointsData['elements'][$id]['explain'][0][0],
+                    'breakdown' => $gameweekPointsData['elements'][$id]['explain'],
                     'fixtures' => $gameweekFixturesData[$this->playerData[$id]['team']],
                 ];
 
