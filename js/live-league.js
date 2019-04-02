@@ -63,7 +63,7 @@ export default {
                         </span>
                     </div>
                     <div class="siimple-table-cell siimple-table-cell--5">
-                        <span class="siimple-tag" :class="getFixtureFormat(fixture, 'class')" v-for="fixture in pick.fixtures">
+                        <span class="siimple-tag margin-right-5" :class="getFixtureFormat(fixture, 'class')" v-for="fixture in pick.fixtures">
                             <i class="fas" :class="getFixtureFormat(fixture, 'icon')"></i>
                             {{ getFixtureFormat(fixture, 'text') }}
                         </span></div>
