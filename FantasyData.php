@@ -301,6 +301,7 @@ class FantasyData
 
     protected function performAutoSubs(&$teamData)
     {
+        $subbedIn = [];
         foreach ($teamData['autosubbable_out'] as $number => $position) {
             // Ensure we show correctly in rare cases where game has performed automatic substitutions
             if ($teamData['picks'][$number]['benched']) {
@@ -309,12 +310,21 @@ class FantasyData
             // Check if an autosub would take team under minimum number of players for outgoing player's position
             $canSubForAnyone = ($teamData['playing_positions'][$position]-1) >= self::POSITIONS_MINIMUM[$position];
             foreach ($teamData['autosubbable_in'] as $inNumber => $inPosition) {
+                // Prevent keepers from subbing in for other positions
+                if ($inPosition == self::POSITION_KEEPER && $position != self::POSITION_KEEPER) {
+                    continue;
+                }
                 // If player going out can be subbed for anyone, or players play same position, perform autosub
                 if ($canSubForAnyone || $position == $inPosition) {
+                    // Player already autosubbed in
+                    if (in_array($inNumber, $subbedIn)) {
+                        continue;
+                    }
                     $teamData['picks'][$number]['benched'] = true;
                     $teamData['picks'][$inNumber]['benched'] = false;
                     $teamData['real_event_total'] += $teamData['picks'][$inNumber]['points'];
                     $teamData['real_total'] += $teamData['picks'][$inNumber]['points'];
+                    $subbedIn[] = $inNumber;
                     break;
                 }
             }
@@ -468,19 +478,24 @@ class FantasyData
                 $picksTeamHasPlayed = true;
             }
         }
-        // Pick has played in the GW, cannot be subbed out
-        if ($pick['breakdown']['minutes']['value']) {
-            $out = false;
-        } else if (!$picksTeamHasPlayed) {
-            // Pick's team hasn't played yet, so a bit early to sub him out
-            $out = false;
-        } else if ($picksTeamHasPlayed) {
-            // Pick hasn't played and thus can't enter from bench
-            $in = false;
-        }
-        // Pick is in starting XI, cannot be subbed in from bench
-        if (!$pick['benched']) {
-            $in = false;
+
+        $minutes = 0;
+        foreach ($pick['breakdown'] as $key => $match) {
+            // Pick has played in the GW, cannot be subbed out
+            $minutes += $match[0]['minutes']['value'];
+            if ($minutes) {
+                $out = false;
+            } else if (!$picksTeamHasPlayed) {
+                // Pick's team hasn't played yet, so a bit early to sub him out
+                $out = false;
+            } else if ($picksTeamHasPlayed) {
+                // Pick hasn't played and thus can't enter from bench
+                $in = false;
+            }
+            // Pick is in starting XI, cannot be subbed in from bench
+            if (!$pick['benched']) {
+                $in = false;
+            }
         }
 
         return [$out, $in];
