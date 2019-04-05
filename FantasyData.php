@@ -89,7 +89,7 @@ class FantasyData
 
         $countdown = 0;
         if ($currentGWData['finished']) {
-            $countdown = strtotime($nextGWData['deadline_time']) + 60 * 60;
+            $countdown = strtotime($nextGWData['deadline_time']) + 0 * 60;
         }
 
         return $countdown;

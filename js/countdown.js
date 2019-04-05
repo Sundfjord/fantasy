@@ -19,7 +19,7 @@ export default {
                     <div class="siimple-box-subtitle">{{ seconds == 1 ? 'Second' : 'Seconds'}}</div>
                 </div>
             </div>
-            <h3 class="margin-top-10 text-center">Until next Gameweek</h3>
+            <h3 class="margin-top-10 text-center">Until next Gameweek Deadline</h3>
         </div>
     `,
     props: ['countdown'],
