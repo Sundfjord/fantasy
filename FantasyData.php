@@ -210,7 +210,7 @@ class FantasyData
             // Add some additional data about each player in currently iterated team
             foreach ($picks as $playerNumber => $player) {
                 $id = $player['element'];
-                $benched = $playerNumber > 10 and $team['active_chip'] != 'bboost';
+                $benched = $playerNumber > 10 && $team['active_chip'] != 'bboost';
                 $picks[$playerNumber] = [
                     'id' => $id,
                     'firstName' => $this->playerData[$id]['first_name'],
