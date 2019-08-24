@@ -11,10 +11,80 @@ class Curler
      */
     public $errorMessage;
 
+    public function authenticate()
+    {
+        // login url
+        $url = 'https://users.premierleague.com/accounts/login/';
+
+        // set the relative path to your txt file to store the csrf token
+        $cookie_file = realpath('your_folder_dir_to_the_txt_file/cookie.txt');
+
+        // make a get request to the official fantasy league login page first, before we log in, to grab the csrf token from the hidden input that has the name of csrfmiddlewaretoken
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt ($ch, CURLOPT_COOKIEJAR, $cookie_file);
+        curl_setopt ($ch, CURLOPT_COOKIEFILE, $cookie_file);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $response = curl_exec($ch);
+
+        $dom = new DOMDocument;
+        @$dom->loadHTML($response);
+
+        // set the csrf here
+        $tags = $dom->getElementsByTagName('input');
+        for($i = 0; $i < $tags->length; $i++) {
+            $grab = $tags->item($i);
+            if($grab->getAttribute('name') === 'csrfmiddlewaretoken') {
+                $token = $grab->getAttribute('value');
+            }
+        }
+
+        // now that we have the token, use our login details to make a POST request to log in along with the essential data form header fields
+        if (empty($token)) {
+            return false;
+        }
+
+        $params = array(
+            "csrfmiddlewaretoken"   => $token,
+            "login"                 => "yngvesundfjord@gmail.com",
+            "password"              => "manchesterutd1",
+            "app"                   => "plfpl-web",
+            "redirect_uri"          => "https://fantasy.premierleague.com/",
+        );
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+
+        /**
+         * using CURLOPT_SSL_VERIFYPEER below is only for testing on a local server, make sure to remove this before uploading to a live server as it can be a security risk.
+         * If you're having trouble with the code after removing this, look at the link that @Dharman provided in the comment section.
+         */
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        //***********************************************^
+
+        $response = curl_exec($ch);
+
+        // set the header field for the token for our final request
+        $headers = array(
+            'csrftoken ' . $token,
+        );
+
+        return [$ch, $headers];
+    }
+
     public function get($url, $decode = false)
     {
-        $curl = curl_init($url);
+        list($curl, $headers) = $this->authenticate();
+        curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
 
         $result = false;
         $attempts = 1;
@@ -48,9 +118,12 @@ class Curler
         $multiCurl = curl_multi_init();
         $handles = [];
         foreach ($urls as $url) {
-            $curl = curl_init($url);
+            list($curl, $headers) = $this->authenticate();
             $handles[] = $curl;
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_HEADER, false);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
             curl_multi_add_handle($multiCurl, $curl);
         }
 

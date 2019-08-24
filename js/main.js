@@ -111,7 +111,7 @@ export default {
 			}
 		},
 		setTeam(data) {
-			this.team = data.entry;
+			this.team = data;
 			this.leagues = data.leagues;
 			this.loading = false;
 			let url = this.baseURL + '?team=' + this.team.id;
