@@ -252,6 +252,8 @@ export default {
                 return;
             }
 
+            // Adjust this to new breakdown data structure
+
             pick.formattedBreakdown = pick.breakdown;
             for (var x in pick.formattedBreakdown) {
                 var match = pick.formattedBreakdown[x][0];

@@ -7,11 +7,11 @@ require_once(__DIR__.'/Curler.php');
  */
 class FantasyData
 {
-    const FANTASY_STATIC_DATA_URL = 'https://fantasy.premierleague.com/drf/bootstrap-static';
-    const FANTASY_TEAM_URL = 'https://fantasy.premierleague.com/drf/entry/';
-    const FANTASY_CLASSIC_LEAGUE_URL = 'https://fantasy.premierleague.com/drf/leagues-classic-standings/';
-    const FANTASY_H2H_LEAGUE_URL = 'https://fantasy.premierleague.com/drf/leagues-h2h-standings/';
-    const FANTASY_LEAGUES_URL = 'https://fantasy.premierleague.com/drf/leagues-entered/';
+    const FANTASY_STATIC_DATA_URL = 'https://fantasy.premierleague.com/api/bootstrap-static/';
+    const FANTASY_TEAM_URL = 'https://fantasy.premierleague.com/api/entry/';
+    const FANTASY_CLASSIC_LEAGUE_URL = 'https://fantasy.premierleague.com/api/leagues-classic/{id}/standings/';
+    const FANTASY_H2H_LEAGUE_URL = 'https://fantasy.premierleague.com/api/leagues-h2h-standings/';
+    const FANTASY_LEAGUES_URL = 'https://fantasy.premierleague.com/api/leagues-entered/';
 
     const POSITION_KEEPER = 1;
     const POSITION_DEFENDER = 2;
@@ -113,7 +113,7 @@ class FantasyData
 
         $data = $this->staticData;
         if (!$data) {
-            $data = $this->curl->get('https://fantasy.premierleague.com/drf/bootstrap-static', true);
+            $data = $this->curl->get(self::FANTASY_STATIC_DATA_URL, true);
         }
 
         if (!$data) {
@@ -141,7 +141,7 @@ class FantasyData
     public function setTeam($teamId)
     {
         $this->teamId = $teamId;
-        $this->teamURL = self::FANTASY_TEAM_URL . $teamId;
+        $this->teamURL = self::FANTASY_TEAM_URL . $teamId .'/';
         $this->leaguesURL = self::FANTASY_LEAGUES_URL . $teamId;
     }
 
@@ -153,26 +153,32 @@ class FantasyData
 
     public function getLeagueData($leagueId, $page = 1)
     {
-        // Get current gameweek
-        $currentEvent = $this->staticData['current-event'];
-
         // For every team in the given league, generate URLs from which to get individual team's points data
         $leagueURLs = [];
         if (is_numeric($page)) {
             // Fetch specific page (lazy loading)
-            $leagueURLs[] = self::FANTASY_CLASSIC_LEAGUE_URL . $leagueId . '?phase=1&le-page=1&ls-page=' . $page;
+            $leagueURLs[] = str_replace('{id}', $leagueId, self::FANTASY_CLASSIC_LEAGUE_URL) . '?phase=1&page_new_entries=1&page_standings=' . $page;
         } else {
             // Fetch a set of pages
             for ($i = 1; $i <= count($page); $i++) {
-                $leagueURLs[] = self::FANTASY_CLASSIC_LEAGUE_URL . $leagueId . '?phase=1&le-page=1&ls-page=' . $i;
+                $leagueURLs[] = str_replace('{id}', $leagueId, self::FANTASY_CLASSIC_LEAGUE_URL) . '?phase=1&page_new_entries=1&page_standings=' . $i;
             }
         }
 
-        $leagueData = $this->curl->getMulti($leagueURLs, true);
+        $leagueData = [];
+        foreach ($leagueURLs as $url) {
+            $leagueData[] = $this->curl->get($url, true);
+        }
 
+        $currentEvent = false;
         $teams = [];
         foreach ($leagueData as $page) {
             foreach ($page['standings']['results'] as $index => $team) {
+                // Get current gameweek
+                if (!$currentEvent) {
+                    $eventTeam = $this->getTeamData($team['entry']);
+                    $currentEvent = $eventTeam['current_event'];
+                }
                 $teams[$team['entry']] = [
                     'entry' => $team['entry'],
                     'team_name' => $team['entry_name'],
@@ -180,7 +186,7 @@ class FantasyData
                     'player_name' => $team['player_name'],
                     'total' => $team['total'],
                     'is_last' => !$page['standings']['has_next'] && $index == (count($page['standings']['results'])-1),
-                    'url' => "https://fantasy.premierleague.com/drf/entry/{$team['entry']}/event/$currentEvent/picks",
+                    'url' => "https://fantasy.premierleague.com/api/entry/{$team['entry']}/event/$currentEvent/picks/",
                     'last_rank' => $team['last_rank'],
                     'real_event_total' => 0,
                     'event_total' => $team['event_total'],
@@ -193,11 +199,12 @@ class FantasyData
         // Perform fetch of gameweek data for each team in chosen league
         $gameweekTeamData = $this->getGameweekDataForTeamsInLeague($teams);
         // Perform fetch of live gameweek information about player points and fixtures
-        $gameweekPointsData = $this->curl->get("https://fantasy.premierleague.com/drf/event/$currentEvent/live", true);
+        $gameweekPointsData = $this->curl->get("https://fantasy.premierleague.com/api/fixtures/?event=$currentEvent", true);
+        $gameweekLiveData = $this->curl->get("https://fantasy.premierleague.com/api/event/$currentEvent/live/", true);
         // Perform fetch of gameweek fixture schedule data
-        $gameweekFixturesData = $this->getFixtureData($gameweekPointsData['fixtures']);
+        $gameweekFixturesData = $this->getFixtureData($gameweekPointsData);
         // Perform fetch of gameweek bonus points
-        $gameweekBonusPoints = $this->getBonusPointsData($gameweekPointsData['fixtures']);
+        $gameweekBonusPoints = $this->getBonusPointsData($gameweekPointsData);
         // Perform fetch of gameweek transfers made by each team in chosen league
         $gameweekTransfersData = $this->getTransfersData($teams);
 
@@ -228,7 +235,7 @@ class FantasyData
                     'bonus_provisional' => false,
                     'transferred_in_for' => false,
                     'benched' => $benched,
-                    'breakdown' => $gameweekPointsData['elements'][$id]['explain'],
+                    'breakdown' => $this->getLivePointsDataForPlayers($gameweekLiveData['elements'], $id, $currentEvent),
                     'fixtures' => $gameweekFixturesData[$this->playerData[$id]['team']],
                 ];
 
@@ -258,8 +265,10 @@ class FantasyData
 
                 // Determine this player's current points, doubled or tripled if captained or triple captained
                 // Add these points to team's and individual tally
-                $playerPoints = $gameweekPointsData['elements'][$id]['stats']['total_points'] * $player['multiplier'];
-                $gameweekTeamData[$teamId]['real_event_total'] += !$benched ? $playerPoints : 0;
+                $playerPoints = $picks[$playerNumber]['breakdown']['stats']['total_points'] * $player['multiplier'];
+                if (!$benched) {
+                    $gameweekTeamData[$teamId]['real_event_total'] += $playerPoints;
+                }
                 $picks[$playerNumber]['points'] = $playerPoints;
 
 
@@ -335,12 +344,15 @@ class FantasyData
     {
         $urls = [];
         foreach ($teams as $team) {
-            $urls[] = $team['url'];
+            $urls[$team['entry']] = $team['url'];
         }
 
-        $gameweekTeamData = $this->curl->getMulti($urls, true);
-        foreach ($gameweekTeamData as $gameweekTeam) {
-            $id = $gameweekTeam['entry_history']['entry'];
+        // $gameweekTeamData = $this->curl->getMulti($urls, true);
+        $gameweekTeamData = [];
+        foreach($urls as $id => $url) {
+            $gameweekTeamData[$id] = $this->curl->get($url, true);
+        }
+        foreach ($gameweekTeamData as $id => $gameweekTeam) {
             $teams[$id] = array_merge($teams[$id], [
                 'event_transfers' => $gameweekTeam['entry_history']['event_transfers'],
                 'event_transfers_cost' => $gameweekTeam['entry_history']['event_transfers_cost'],
@@ -350,6 +362,17 @@ class FantasyData
         }
 
         return $teams;
+    }
+
+    protected function getLivePointsDataForPlayers($players, $id, $currentEvent)
+    {
+        foreach ($players as $player) {
+            if ($player['id'] == $id) {
+                return $player;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -400,12 +423,12 @@ class FantasyData
             }
 
             // Determine if bonus points are confirmed or not, finding the bonus data in the process
-            if (empty($fixture['stats'][8]['bonus']['a']) && empty($fixture['stats'][8]['bonus']['h'])) {
+            if (empty($fixture['stats'][8]['a']) && empty($fixture['stats'][8]['h'])) {
                 $confirmed = false;
-                $bonusData = $fixture['stats'][9]['bps'];
+                $bonusData = $fixture['stats'][9];
             } else {
                 $confirmed = true;
-                $bonusData = $fixture['stats'][8]['bonus'];
+                $bonusData = $fixture['stats'][8];
             }
 
             // Merge home and away team BPS data
@@ -434,11 +457,15 @@ class FantasyData
     {
         $urls = [];
         foreach ($teams as $id => $team) {
-            $urls[] = self::FANTASY_TEAM_URL . $id . '/transfers';
+            $urls[] = self::FANTASY_TEAM_URL . $id . '/transfers/';
         }
 
-        $currentEvent = $this->staticData['current-event'];
-        $transferData = $this->curl->getMulti($urls, true);
+        // $currentEvent = $this->staticData['current-event'];
+        // $transferData = $this->curl->getMulti($urls, true);
+        $transferData = [];
+        foreach($urls as $url) {
+            $transferData[] = $this->curl->get($url, true);
+        }
         $transfers = [];
         foreach ($transferData as $key => $team) {
             if (empty($team['history'])) {
@@ -479,23 +506,20 @@ class FantasyData
             }
         }
 
-        $minutes = 0;
-        foreach ($pick['breakdown'] as $key => $match) {
-            // Pick has played in the GW, cannot be subbed out
-            $minutes += $match[0]['minutes']['value'];
-            if ($minutes) {
-                $out = false;
-            } else if (!$picksTeamHasPlayed) {
-                // Pick's team hasn't played yet, so a bit early to sub him out
-                $out = false;
-            } else if ($picksTeamHasPlayed) {
-                // Pick hasn't played and thus can't enter from bench
-                $in = false;
-            }
-            // Pick is in starting XI, cannot be subbed in from bench
-            if (!$pick['benched']) {
-                $in = false;
-            }
+        $minutes = $pick['breakdown']['stats']['minutes'];
+        // Pick has played in the GW, cannot be subbed out
+        if ($minutes) {
+            $out = false;
+        } else if (!$picksTeamHasPlayed) {
+            // Pick's team hasn't played yet, so a bit early to sub him out
+            $out = false;
+        } else if ($picksTeamHasPlayed) {
+            // Pick hasn't played and thus can't enter from bench
+            $in = false;
+        }
+        // Pick is in starting XI, cannot be subbed in from bench
+        if (!$pick['benched']) {
+            $in = false;
         }
 
         return [$out, $in];
