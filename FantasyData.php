@@ -63,7 +63,8 @@ class FantasyData
 
     public function isUpdating()
     {
-        if (empty($this->staticData)) {
+        $updating = $this->curl->get('https://fantasy.premierleague.com/api/me/', true);
+        if ($updating == 'The game is being updated.') {
             return true;
         }
 
