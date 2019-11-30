@@ -15,7 +15,11 @@ switch($data['info']) {
 		$result['data'] = $fantasy->getTeamData($data['teamId']);
 		break;
 	case 'live':
-		$result['data'] = $fantasy->getLeagueData($data['leagueId'], $data['page']);
+		$count = 0;
+		do {
+			$result['data'] = $fantasy->getLeagueData($data['leagueId'], $data['page']);
+			$count++;
+		} while (empty($result['data']) && $count < 5);
 		break;
 }
 

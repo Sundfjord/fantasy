@@ -181,7 +181,6 @@ export default {
                 for (var i = 1; i <= Math.ceil(this.league.length / 50); i++) {
                     page.push(i);
                 }
-
             }
 
             var payload = {
