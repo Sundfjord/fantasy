@@ -98,7 +98,7 @@ export default {
                                 <div class="siimple-table-cell"></div>
                             </div>
                             <div class="siimple-table-row" v-for="(stats, type) in match">
-                                <div class="siimple-table-cell">{{ stats.name }}</div>
+                                <div class="siimple-table-cell">{{ getDisplayIdentifier(stats.identifier) }}</div>
                                 <div class="siimple-table-cell">{{ stats.value}}</div>
                                 <div class="siimple-table-cell">{{ stats.points }}</div>
                             </div>
@@ -195,7 +195,7 @@ export default {
             $.ajax({
                 url: '/fantasy/get-data.php',
                 data: payload,
-                timeout: 20000
+                timeout: 50000
             })
             .done(function(data) {
                 let result = JSON.parse(data);
@@ -255,8 +255,8 @@ export default {
             // Adjust this to new breakdown data structure
 
             pick.formattedBreakdown = pick.breakdown;
-            for (var x in pick.formattedBreakdown) {
-                var match = pick.formattedBreakdown[x][0];
+            for (var x in pick.formattedBreakdown.explain) {
+                var match = pick.formattedBreakdown.explain[x].stats;
                 if (pick.bonus) {
                     // Try to ensure that we are attributing bonus points to the correct match in the GW
                     // by checking that the player has played in the game and that the fixture's minutes has no been updated
@@ -357,7 +357,7 @@ export default {
             return "same";
         },
         getActiveChipName(team) {
-            if (team.active_chip == '') {
+            if (!team.active_chip) {
                 return false;
             }
 
@@ -411,6 +411,13 @@ export default {
                 icon: 'fa-stopwatch'
             };
             return data[property];
+        },
+        getDisplayIdentifier(identifier) {
+            return (identifier + '')
+            .replace(/_/g, ' ')
+            .replace(/^(.)|\s+(.)/g, function ($1) {
+              return $1.toUpperCase()
+            });
         },
         getIconClass(movement) {
             switch(movement) {
