@@ -166,10 +166,7 @@ class FantasyData
             }
         }
 
-        $leagueData = [];
-        foreach ($leagueURLs as $url) {
-            $leagueData[] = $this->curl->get($url, true);
-        }
+        $leagueData = $this->curl->getMulti($leagueURLs, true);
 
         $currentEvent = false;
         $teams = [];
@@ -348,11 +345,7 @@ class FantasyData
             $urls[$team['entry']] = $team['url'];
         }
 
-        // $gameweekTeamData = $this->curl->getMulti($urls, true);
-        $gameweekTeamData = [];
-        foreach($urls as $id => $url) {
-            $gameweekTeamData[$id] = $this->curl->get($url, true);
-        }
+        $gameweekTeamData = $this->curl->getMulti($urls, true);
         foreach ($gameweekTeamData as $id => $gameweekTeam) {
             $teams[$id] = array_merge($teams[$id], [
                 'event_transfers' => $gameweekTeam['entry_history']['event_transfers'],
@@ -462,11 +455,7 @@ class FantasyData
         }
 
         // $currentEvent = $this->staticData['current-event'];
-        // $transferData = $this->curl->getMulti($urls, true);
-        $transferData = [];
-        foreach($urls as $url) {
-            $transferData[] = $this->curl->get($url, true);
-        }
+        $transferData = $this->curl->getMulti($urls, true);
         $transfers = [];
         foreach ($transferData as $key => $team) {
             if (empty($team['history'])) {
