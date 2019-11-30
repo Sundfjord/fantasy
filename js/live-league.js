@@ -199,6 +199,10 @@ export default {
             })
             .done(function(data) {
                 let result = JSON.parse(data);
+                if (!result.data.length) {
+                    that.update(more);
+                    return;
+                }
                 let newLeague = result.data;
                 if (more === true) {
                     newLeague = that.league.concat(result.data);
