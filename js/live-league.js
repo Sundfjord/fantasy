@@ -256,19 +256,20 @@ export default {
             }
 
             // Adjust this to new breakdown data structure
-
             pick.formattedBreakdown = pick.breakdown;
             for (var x in pick.formattedBreakdown.explain) {
                 var match = pick.formattedBreakdown.explain[x].stats;
+                var hasPlayed = match.filter(stat => stat.identifier == "minutes" && stat.value > 0).length > 0;
+                var isLatestMatch = pick.fixtures[x].finished && pick.fixtures[x].time_until_kickoff.indexOf('d') < 0;
                 if (pick.bonus) {
                     // Try to ensure that we are attributing bonus points to the correct match in the GW
                     // by checking that the player has played in the game and that the fixture's minutes has no been updated
-                    if (pick.bonus_provisional && (match.minutes.value > 0 && !pick.fixtures[x].minutes)) {
-                        match.bonus = {
-                            name: 'Projected Bonus',
+                    if (pick.bonus_provisional && hasPlayed && isLatestMatch) {
+                        match.push({
+                            identifier: 'projected_bonus',
                             value: pick.bonus,
                             points: pick.bonus
-                        };
+                        });
                     }
                 }
                 breakdown.push(match);
