@@ -13,8 +13,11 @@ class Curler
 
     protected $cookie;
 
+    protected $authenticationAttempts = 0;
+
     public function authenticate()
     {
+        $this->authenticationAttempts++;
         // login url
         $url = 'https://users.premierleague.com/accounts/login/';
 
@@ -44,7 +47,7 @@ class Curler
 
         // now that we have the token, use our login details to make a POST request to log in along with the essential data form header fields
         if (empty($token)) {
-            return false;
+            $this->authenticate();
         }
 
         $params = array(
@@ -74,21 +77,17 @@ class Curler
         curl_close($ch);
 
         // set the header field for the token for our final request
-        $headers = array(
-            'csrftoken ' . $token,
-        );
-
-        return $headers;
+        return ['csrftoken ' . $token];
     }
 
     public function get($url, $decode = false)
     {
-        $headers = $this->authenticate();
+        // $headers = $this->authenticate();
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_HEADER, false);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        // curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($curl, CURLOPT_COOKIEJAR, $this->cookie);
         curl_setopt($curl, CURLOPT_COOKIEFILE, $this->cookie);
