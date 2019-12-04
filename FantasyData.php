@@ -215,7 +215,9 @@ class FantasyData
             // Add some additional data about each player in currently iterated team
             foreach ($picks as $playerNumber => $player) {
                 $id = $player['element'];
-                $benched = $playerNumber > 10 and $team['active_chip'] != 'bboost';
+                $benched = $playerNumber > 10 && $team['active_chip'] != 'bboost';
+                // Set multiplier to 1 for benched players with multiplier 0
+                $realMultiplier = $player['multiplier'] == 0 ? 1 : $player['multiplier'];
                 $picks[$playerNumber] = [
                     'id' => $id,
                     'firstName' => $this->playerData[$id]['first_name'],
@@ -263,12 +265,11 @@ class FantasyData
 
                 // Determine this player's current points, doubled or tripled if captained or triple captained
                 // Add these points to team's and individual tally
-                $playerPoints = $picks[$playerNumber]['breakdown']['stats']['total_points'] * $player['multiplier'];
+                $playerPoints = $picks[$playerNumber]['breakdown']['stats']['total_points'] * $realMultiplier;
                 if (!$benched) {
                     $gameweekTeamData[$teamId]['real_event_total'] += $playerPoints;
                 }
                 $picks[$playerNumber]['points'] = $playerPoints;
-
 
                 // No bonus points for this player, carry on
                 if (!isset($gameweekBonusPoints[$id])) {
@@ -284,7 +285,7 @@ class FantasyData
                     continue;
                 }
 
-                $playerBonusPoints = $gameweekBonusPoints[$id]['points'] * $player['multiplier'];
+                $playerBonusPoints = $gameweekBonusPoints[$id]['points'] * $realMultiplier;
                 // Update status to reflect that bonus points are unconfirmed
                 $picks[$playerNumber]['bonus_provisional'] = true;
                 // Add this player's current bonus points to team's and individual tally
