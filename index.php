@@ -5,8 +5,8 @@
 	$fantasy = new FantasyData();
 
 	$data = ['baseURL' => $_SERVER['SERVER_NAME']];
-	// Turn off error reporting in live environment
-	if (strpos($data['baseURL'], 'sundfjord.com') !== false) {
+	// Turn off error reporting in live environment when not in office
+	if (strpos($data['baseURL'], 'sundfjord.com') !== false && $_SERVER['REMOTE_ADDR'] != '82.134.78.86') {
 		error_reporting(0);
 	}
 	if (isset($_GET['team'])) {
