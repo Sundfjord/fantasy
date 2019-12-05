@@ -204,7 +204,7 @@ class FantasyData
         // Perform fetch of gameweek bonus points
         $gameweekBonusPoints = $this->getBonusPointsData($gameweekPointsData);
         // Perform fetch of gameweek transfers made by each team in chosen league
-        $gameweekTransfersData = $this->getTransfersData($teams);
+        $gameweekTransfersData = $this->getTransfersData($teams, $currentEvent);
 
         // Loop through each team's player picks
         foreach ($gameweekTeamData as $teamId => $team) {
@@ -448,30 +448,27 @@ class FantasyData
         return $bonusPoints;
     }
 
-    protected function getTransfersData($teams)
+    protected function getTransfersData($teams, $currentEvent)
     {
         $urls = [];
         foreach ($teams as $id => $team) {
             $urls[] = self::FANTASY_TEAM_URL . $id . '/transfers/';
         }
 
-        // $currentEvent = $this->staticData['current-event'];
         $transferData = $this->curl->getMulti($urls, true);
         $transfers = [];
         foreach ($transferData as $key => $team) {
-            if (empty($team['history'])) {
+            if (empty($team)) {
                 continue;
             }
 
-            $eventTransfers = [];
-            foreach (array_reverse($team['history']) as $history) {
-                if ($currentEvent > $history['event']) {
+            foreach ($team as $transfer) {
+                if ($currentEvent > $transfer['event']) {
                     break;
                 }
 
-                $eventTransfers[] = [$history['element_in'] => $history['element_out']];
+                $transfers[$transfer['entry']][] = [$transfer['element_in'] => $transfer['element_out']];
             }
-            $transfers[$team['entry']['id']] = $eventTransfers;
         }
 
         return $transfers;
