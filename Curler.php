@@ -11,7 +11,7 @@ class Curler
      */
     public $errorMessage;
 
-    protected $cookie;
+    protected $cookieString;
 
     protected $authenticationAttempts = 0;
 
@@ -20,8 +20,6 @@ class Curler
         $this->authenticationAttempts++;
         // login url
         $url = 'https://users.premierleague.com/accounts/login/';
-
-        $this->cookie = realpath('cookie.txt');
 
         // make a get request to the official fantasy league login page first, before we log in, to grab the csrf token from the hidden input that has the name of csrfmiddlewaretoken
         $ch = curl_init();
@@ -62,17 +60,12 @@ class Curler
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, $this->cookie);
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $this->cookie);
-
-        /**
-         * using CURLOPT_SSL_VERIFYPEER below is only for testing on a local server, make sure to remove this before uploading to a live server as it can be a security risk.
-         * If you're having trouble with the code after removing this, look at the link that @Dharman provided in the comment section.
-         */
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        //***********************************************^
 
         $response = curl_exec($ch);
+
+        // Store the cookies we get in an array
+        preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $response, $matches);
+        $this->cookieString = implode('; ', $matches[1]);
 
         curl_close($ch);
 
@@ -82,15 +75,11 @@ class Curler
 
     public function get($url, $decode = false)
     {
-        // $headers = $this->authenticate();
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_HEADER, false);
-        // curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($curl, CURLOPT_COOKIEJAR, $this->cookie);
-        curl_setopt($curl, CURLOPT_COOKIEFILE, $this->cookie);
 
         $result = false;
         $attempts = 1;
@@ -131,8 +120,7 @@ class Curler
             curl_setopt($curl, CURLOPT_HEADER, false);
             curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
             curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($curl, CURLOPT_COOKIEJAR, $this->cookie);
-            curl_setopt($curl, CURLOPT_COOKIEFILE, $this->cookie);
+            curl_setopt($curl, CURLOPT_COOKIE, $this->cookieString);
             curl_multi_add_handle($multiCurl, $curl);
         }
 
