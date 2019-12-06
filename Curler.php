@@ -1,5 +1,7 @@
 <?php
 
+require_once(__DIR__.'/defines.php');
+
 class Curler
 {
     const CURL_ATTEMPTS_LIMIT = 10;
@@ -50,8 +52,8 @@ class Curler
 
         $params = array(
             "csrfmiddlewaretoken"   => $token,
-            "login"                 => "yngvesundfjord@gmail.com",
-            "password"              => "manchesterutd1",
+            "login"                 => FANTASY_LOGIN_EMAIL,
+            "password"              => FANTASY_LOGIN_PASSWORD,
             "app"                   => "plfpl-web",
             "redirect_uri"          => "https://fantasy.premierleague.com/",
         );
