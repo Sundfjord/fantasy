@@ -132,6 +132,8 @@ class FantasyData
                 'web_name' => $player['web_name'],
                 'team' => $player['team'],
                 'cost' => number_format(($player['now_cost'] / 10), 1),
+                'availability' => $player['chance_of_playing_this_round'],
+                'availability_text' => $player['news'],
             ];
         }
 
@@ -230,6 +232,8 @@ class FantasyData
                     'tripleCaptain' => $player['multiplier'] == 3,
                     'captain' => $player['is_captain'],
                     'viceCaptain' => $player['is_vice_captain'],
+                    'availability' => $this->playerData[$id]['availability'],
+                    'availability_text' => $this->playerData[$id]['availability_text'],
                     'points' => 0,
                     'bonus' => 0,
                     'bonus_provisional' => false,
