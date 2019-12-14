@@ -55,7 +55,7 @@ export default {
                 <div class="siimple-table-row" :class="{'faded': pick.benched && team.active_chip != 'bboost'}" v-show="showPlayer(team, pick)" v-for="pick in team.picks">
                     <div class="siimple-table-cell">{{ getPositionInString(pick.position, pick.benched) }}</div>
                     <div class="siimple-table-cell siimple-table-cell--5">
-                        <strong>{{ pick.name }} {{ getCaptaincyRoleIfAny(pick) }} </strong><span v-if="pick.transferred_in_for"><i class="siimple--color-success fa fa-arrow-alt-circle-up"></i> {{ pick.transferred_in_for }} <i class="siimple--color-error fa fa-arrow-alt-circle-down"></i></span>
+                        <strong :class="getAvailabilityClass(pick)" :title="pick.availability_text">{{ pick.name }} <i v-show="isDubious(pick)" :class="getAvailabilityIconClass(pick)"></i></strong> <strong>{{ getCaptaincyRoleIfAny(pick) }} </strong><span v-if="pick.transferred_in_for"><i class="siimple--color-success fa fa-arrow-alt-circle-up"></i> {{ pick.transferred_in_for }} <i class="siimple--color-error fa fa-arrow-alt-circle-down"></i></span>
                     </div>
                     <div class="siimple-table-cell">
                         <span class="siimple-table-cell-sortable open-modal" @click="setModalContent(pick)">
@@ -334,6 +334,31 @@ export default {
             }
 
             return shortPosition;
+        },
+        isDubious(pick) {
+            return pick.availability != null && pick.availability != 100;
+        },
+        getAvailabilityClass(pick) {
+            if (pick.availability === null || pick.availability === 100) {
+                return '';
+            }
+
+            if (pick.availability === 0) {
+                return 'siimple--color-error siimple-table-cell-sortable';
+            }
+
+            return 'siimple--color-warning siimple-table-cell-sortable';
+        },
+        getAvailabilityIconClass(pick) {
+            if (pick.availability === null || pick.availability === 100) {
+                return '';
+            }
+
+            if (pick.availability === 0) {
+                return 'fas fa-exclamation-triangle siimple--ml-1';
+            }
+
+            return 'fas fa-exclamation-triangle siimple--ml-1';
         },
         getCaptaincyRoleIfAny(pick) {
             if (pick.viceCaptain) {
