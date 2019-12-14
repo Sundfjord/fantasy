@@ -20,6 +20,7 @@ export default {
                 <div class="siimple-table-row">
                     <div class="siimple-table-cell">Rank</div>
                     <div class="siimple-table-cell">Team & Manager</div>
+                    <div class="siimple-table-cell"></div>
                     <div class="siimple-table-cell siimple-table-cell-sortable" title="Live Gameweek Points" @click="sort('real_event_total')">
                         LGWP<i v-show="sortBy == 'real_event_total' && sortDirection == 'asc'" class="fas fa-sort-up"></i>
                         <i v-show="sortBy == 'real_event_total' && sortDirection == 'desc'" class="fas fa-sort-down"></i>
@@ -43,8 +44,11 @@ export default {
                             {{ getActiveChipName(team) }}
                         </span>
                     </div>
+                    <div class="siimple-table-cell">
+                        <span class="siimple-tag siimple-tag--light" :title="getPointsPerPlayerAverage(team)">{{ getRoundProgress(team) }}</span>
+                    </div>
                     <div class="siimple-table-cell">{{ team.real_event_total }}</div>
-                    <div class="siimple-table-cell siimple-table-cell--5">{{ team.real_total}}</div>
+                    <div class="siimple-table-cell siimple-table-cell--3">{{ team.real_total}}</div>
                     <div class="siimple-table-cell siimple--text-center clickable" style="border-left: 1px solid #cbd8e6;" @click="toggleDetails(team.entry)">
                         <span style="font-size: 25px;">
                             <span v-if="team.expanded"><i class="fa fa-caret-up"></i></span>
@@ -57,12 +61,13 @@ export default {
                     <div class="siimple-table-cell siimple-table-cell--5">
                         <strong :class="getAvailabilityClass(pick)" :title="pick.availability_text">{{ pick.name }} <i v-show="isDubious(pick)" :class="getAvailabilityIconClass(pick)"></i></strong> <strong>{{ getCaptaincyRoleIfAny(pick) }} </strong><span v-if="pick.transferred_in_for"><i class="siimple--color-success fa fa-arrow-alt-circle-up"></i> {{ pick.transferred_in_for }} <i class="siimple--color-error fa fa-arrow-alt-circle-down"></i></span>
                     </div>
+                    <div class="siimple-table-cell"></div>
                     <div class="siimple-table-cell">
                         <span class="siimple-table-cell-sortable open-modal" @click="setModalContent(pick)">
                             <strong>{{ pick.points }}</strong> pts
                         </span>
                     </div>
-                    <div class="siimple-table-cell siimple-table-cell--5">
+                    <div class="siimple-table-cell siimple-table-cell--3">
                         <span class="siimple-tag margin-right-5" :class="getFixtureFormat(fixture, 'class')" v-for="fixture in pick.fixtures">
                             <i class="fas" :class="getFixtureFormat(fixture, 'icon')"></i>
                             {{ getFixtureFormat(fixture, 'text') }}
@@ -289,6 +294,31 @@ export default {
             }
 
             this.sortDirection = direction;
+        },
+        getRoundProgress(team, asArray) {
+            var played = 0;
+            var total = 0;
+            for (var x in team.picks) {
+                var pick = team.picks[x];
+                if (pick.benched) {
+                    continue;
+                }
+                for (var y in pick.fixtures) {
+                    total++;
+                    if (pick.fixtures[y].finished) {
+                        played++;
+                    }
+                }
+            }
+
+            if (asArray) {
+                return [played, total];
+            }
+
+            return played + '/' + total + ' played';
+        },
+        getPointsPerPlayerAverage(team) {
+            return (team.real_event_total / this.getRoundProgress(team, true)[0]).toFixed(2) + ' points per player';
         },
         showPlayer(team, pick) {
             // Don't show if team is not expanded
