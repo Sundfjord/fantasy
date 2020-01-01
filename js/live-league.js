@@ -20,7 +20,7 @@ export default {
                 <div class="siimple-table-row">
                     <div class="siimple-table-cell">Rank</div>
                     <div class="siimple-table-cell">Team & Manager</div>
-                    <div class="siimple-table-cell"></div>
+                    <div class="siimple-table-cell siimple-hide-sm"></div>
                     <div class="siimple-table-cell siimple-table-cell-sortable" title="Live Gameweek Points" @click="sort('real_event_total')">
                         LGWP<i v-show="sortBy == 'real_event_total' && sortDirection == 'asc'" class="fas fa-sort-up"></i>
                         <i v-show="sortBy == 'real_event_total' && sortDirection == 'desc'" class="fas fa-sort-down"></i>
@@ -34,22 +34,24 @@ export default {
             </div>
             <div class="siimple-table-body" v-for="(team, index) in newLeagueTable">
                 <div class="siimple-table-row" :class="{'siimple-table-row-selected': team.isSelectedTeam}">
-                    <div class="siimple-table-cell">
+                    <div class="siimple-table-cell siimple-table-cell--1 padding-right-0">
                         {{ team.real_rank }} <i class="fas" :class="getIconClass(team.movement)"></i>
                     </div>
                     <div class="siimple-table-cell siimple-table-cell--5">
                         <strong class="block">{{ team.team_name }}</strong>
                         <span class="block">{{ team.player_name }}</span>
-                        <span class="siimple-tag siimple-tag--primary" v-if="getActiveChipName(team)">
+                        <span class="siimple-tag siimple-tag--primary" style="white-space: nowrap;" v-if="getActiveChipName(team)">
                             {{ getActiveChipName(team) }}
                         </span>
                     </div>
-                    <div class="siimple-table-cell">
-                        <span class="siimple-tag siimple-tag--light" :title="getPointsPerPlayerAverage(team)">{{ getRoundProgress(team) }}</span>
+                    <div class="siimple-table-cell siimple-table-cell--2 siimple-hide-sm">
+                        <span class="siimple-tag siimple-tag--light" style="white-space: nowrap;" :title="getPointsPerPlayerAverage(team)">
+                            {{ getRoundProgress(team) }}
+                        </span>
                     </div>
-                    <div class="siimple-table-cell">{{ team.real_event_total }}</div>
-                    <div class="siimple-table-cell siimple-table-cell--3">{{ team.real_total}}</div>
-                    <div class="siimple-table-cell siimple--text-center clickable" style="border-left: 1px solid #cbd8e6;" @click="toggleDetails(team.entry)">
+                    <div class="siimple-table-cell siimple-table-cell--1">{{ team.real_event_total }}</div>
+                    <div class="siimple-table-cell siimple-table-cell--1">{{ team.real_total}}</div>
+                    <div class="siimple-table-cell siimple-table-cell--1 siimple--text-center clickable" style="border-left: 1px solid #cbd8e6;" @click="toggleDetails(team.entry)">
                         <span style="font-size: 25px;">
                             <span v-if="team.expanded"><i class="fa fa-caret-up"></i></span>
                             <span v-else><i class="fa fa-caret-down"></i></span>
@@ -57,22 +59,23 @@ export default {
                     </div>
                 </div>
                 <div class="siimple-table-row" :class="{'faded': pick.benched && team.active_chip != 'bboost'}" v-show="showPlayer(team, pick)" v-for="pick in team.picks">
-                    <div class="siimple-table-cell">{{ getPositionInString(pick.position, pick.benched) }}</div>
+                    <div class="siimple-table-cell siimple-table-cell--1 padding-right-0">{{ getPositionInString(pick.position, pick.benched) }}</div>
                     <div class="siimple-table-cell siimple-table-cell--5">
-                        <strong :class="getAvailabilityClass(pick)" :title="pick.availability_text">{{ pick.name }} <i v-show="isDubious(pick)" :class="getAvailabilityIconClass(pick)"></i></strong> <strong>{{ getCaptaincyRoleIfAny(pick) }} </strong><span v-if="pick.transferred_in_for"><i class="siimple--color-success fa fa-arrow-alt-circle-up"></i> {{ pick.transferred_in_for }} <i class="siimple--color-error fa fa-arrow-alt-circle-down"></i></span>
+                        <strong :class="getAvailabilityClass(pick)" :title="pick.availability_text">{{ pick.name }} <i v-show="isDubious(pick)" :class="getAvailabilityIconClass(pick)"></i></strong> <strong>{{ getCaptaincyRoleIfAny(pick) }} </strong><span v-if="pick.transferred_in_for"><i class="siimple--color-success fa fa-arrow-alt-circle-up"></i> <span style="white-space: nowrap;">{{ pick.transferred_in_for }} <i class="siimple--color-error fa fa-arrow-alt-circle-down"></i></span></span>
                     </div>
-                    <div class="siimple-table-cell"></div>
-                    <div class="siimple-table-cell">
+                    <div class="siimple-table-cell siimple-table-cell--1">
                         <span class="siimple-table-cell-sortable open-modal" @click="setModalContent(pick)">
                             <strong>{{ pick.points }}</strong> pts
                         </span>
                     </div>
-                    <div class="siimple-table-cell siimple-table-cell--3">
-                        <span class="siimple-tag margin-right-5" :class="getFixtureFormat(fixture, 'class')" v-for="fixture in pick.fixtures">
+                    <div class="siimple-table-cell siimple-table-cell--1">
+                        <span class="siimple-tag margin-right-5 siimple-hide-sm" :class="getFixtureFormat(fixture, 'class')" style="white-space: nowrap;" v-for="fixture in pick.fixtures">
                             <i class="fas" :class="getFixtureFormat(fixture, 'icon')"></i>
                             {{ getFixtureFormat(fixture, 'text') }}
-                        </span></div>
-                    <div class="siimple-table-cell"></div>
+                        </span>
+                    </div>
+                    <div class="siimple-table-cell siimple-table-cell--1"></div>
+                    <div class="siimple-table-cell siimple-table-cell--1 siimple-hide-sm"></div>
                 </div>
             </div>
         </div>
@@ -265,7 +268,7 @@ export default {
             for (var x in pick.formattedBreakdown.explain) {
                 var match = pick.formattedBreakdown.explain[x].stats;
                 var hasPlayed = match.filter(stat => stat.identifier == "minutes" && stat.value > 0).length > 0;
-                var isLatestMatch = pick.fixtures[x].finished && pick.fixtures[x].time_until_kickoff.indexOf('d') < 0;
+                var isLatestMatch = (pick.fixtures[x].started && !pick.fixtures[x].finished) || (pick.fixtures[x].finished && pick.fixtures[x].time_until_kickoff.indexOf('d') < 0);
                 if (pick.bonus) {
                     // Try to ensure that we are attributing bonus points to the correct match in the GW
                     // by checking that the player has played in the game and that the fixture's minutes has no been updated

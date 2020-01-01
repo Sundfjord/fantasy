@@ -12,8 +12,7 @@ export default {
                 <!-- <img v-show="league" height="30" class="bw margin-top-5" title="Automatically updating league results" src="/fantasy/media/live.gif"> -->
             </div>
             <div class="siimple-grid-row">
-                <h1 class="margin-bottom-0">Select League for {{ team.name }} <span class="siimple--color-light">*</span></h1>
-                <small class="siimple-small">* Will only summarise the top 50.</small>
+                <h2 class="margin-bottom-0">{{ team.name }}</h2>
             </div>
             <div class="siimple-grid-row-fullwidth">
                 <div class="siimple-table siimple-table--striped siimple-table--hover clickable margin-top-20">
