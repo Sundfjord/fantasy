@@ -18,65 +18,67 @@ export default {
         <div class="siimple-table siimple-table--striped">
             <div class="siimple-table-header" style="padding: 10px; border-bottom: 0!important;">
                 <div class="siimple-table-row">
-                    <div class="siimple-table-cell">Rank</div>
-                    <div class="siimple-table-cell">Team & Manager</div>
-                    <div class="siimple-table-cell siimple-hide-sm"></div>
-                    <div class="siimple-table-cell siimple-table-cell-sortable" title="Live Gameweek Points" @click="sort('real_event_total')">
+                    <div class="siimple-table-cell siimple-table-cell--1"></div>
+                    <div class="siimple-table-cell siimple-table-cell--4">Team & Manager</div>
+                    <div class="siimple-table-cell siimple-table-cell--1 siimple-hide-sm"></div>
+                    <div class="siimple-table-cell siimple-table-cell--2 siimple-table-cell-sortable" title="Live Gameweek Points" @click="sort('real_event_total')">
                         LGWP<i v-show="sortBy == 'real_event_total' && sortDirection == 'asc'" class="fas fa-sort-up"></i>
                         <i v-show="sortBy == 'real_event_total' && sortDirection == 'desc'" class="fas fa-sort-down"></i>
                     </div>
-                    <div class="siimple-table-cell siimple-table-cell-sortable" title="Live Total Points" @click="sort('real_total')">
+                    <div class="siimple-table-cell siimple-table-cell--2 siimple-table-cell-sortable" title="Live Total Points" @click="sort('real_total')">
                         LTP<i v-show="sortBy == 'real_total' && sortDirection == 'asc'" class="fas fa-sort-up"></i>
                         <i v-show="sortBy == 'real_total' && sortDirection == 'desc'" class="fas fa-sort-down"></i>
                     </div>
-                    <div class="siimple-table-cell"></div>
+                    <div class="siimple-table-cell siimple-table-cell--2"></div>
                 </div>
             </div>
-            <div class="siimple-table-body" v-for="(team, index) in newLeagueTable">
-                <div class="siimple-table-row" :class="{'siimple-table-row-selected': team.isSelectedTeam}">
-                    <div class="siimple-table-cell siimple-table-cell--1 padding-right-0">
-                        {{ team.real_rank }} <i class="fas" :class="getIconClass(team.movement)"></i>
+            <div class="siimple-table-body">
+                <template v-for="(team, index) in newLeagueTable">
+                    <div class="siimple-table-row" :class="{'siimple-table-row-selected': team.isSelectedTeam}">
+                        <div class="siimple-table-cell padding-right-0">
+                            {{ team.real_rank }} <i class="fas" :class="getIconClass(team.movement)"></i>
+                        </div>
+                        <div class="siimple-table-cell">
+                            <strong class="block ellipsis">{{ team.team_name }}</strong>
+                            <span class="block ellipsis">{{ team.player_name }}</span>
+                            <span class="siimple-tag siimple-tag--primary" style="white-space: nowrap;" v-if="getActiveChipName(team)">
+                                {{ getActiveChipName(team) }}
+                            </span>
+                        </div>
+                        <div class="siimple-table-cell siimple-hide-sm">
+                            <span class="siimple-tag siimple-tag--light" style="white-space: nowrap;" :title="getPointsPerPlayerAverage(team)">
+                                {{ getRoundProgress(team) }}
+                            </span>
+                        </div>
+                        <div class="siimple-table-cell">{{ team.real_event_total }}</div>
+                        <div class="siimple-table-cell">{{ team.real_total}}</div>
+                        <div class="siimple-table-cell siimple--text-center clickable" style="border-left: 1px solid #cbd8e6;" @click="toggleDetails(team.entry)">
+                            <span style="font-size: 25px;">
+                                <span v-if="team.expanded"><i class="fa fa-caret-up"></i></span>
+                                <span v-else><i class="fa fa-caret-down"></i></span>
+                            </span>
+                        </div>
                     </div>
-                    <div class="siimple-table-cell siimple-table-cell--5">
-                        <strong class="block">{{ team.team_name }}</strong>
-                        <span class="block">{{ team.player_name }}</span>
-                        <span class="siimple-tag siimple-tag--primary" style="white-space: nowrap;" v-if="getActiveChipName(team)">
-                            {{ getActiveChipName(team) }}
-                        </span>
+                    <div class="siimple-table-row" :class="{'faded': pick.benched && team.active_chip != 'bboost'}" v-if="showPlayer(team, pick)" v-for="pick in team.picks">
+                        <div class="siimple-table-cell padding-right-0">{{ getPositionInString(pick.position, pick.benched) }}</div>
+                        <div class="siimple-table-cell">
+                            <strong :class="getAvailabilityClass(pick)" :title="pick.availability_text">{{ pick.name }} <i v-show="isDubious(pick)" :class="getAvailabilityIconClass(pick)"></i></strong> <strong>{{ getCaptaincyRoleIfAny(pick) }} </strong><span v-if="pick.transferred_in_for"><i class="siimple--color-success fa fa-arrow-alt-circle-up"></i> <span style="white-space: nowrap;">{{ pick.transferred_in_for }} <i class="siimple--color-error fa fa-arrow-alt-circle-down"></i></span></span>
+                        </div>
+                        <div class="siimple-table-cell">
+                            <span class="siimple-table-cell-sortable open-modal" @click="setModalContent(pick)">
+                                <strong>{{ pick.points }}</strong> pts
+                            </span>
+                        </div>
+                        <div class="siimple-table-cell">
+                            <span class="siimple-tag margin-right-5 siimple-hide-sm" :class="getFixtureFormat(fixture, 'class')" style="white-space: nowrap;" v-for="fixture in pick.fixtures">
+                                <i class="fas" :class="getFixtureFormat(fixture, 'icon')"></i>
+                                {{ getFixtureFormat(fixture, 'text') }}
+                            </span>
+                        </div>
+                        <div class="siimple-table-cell"></div>
+                        <div class="siimple-table-cell siimple-hide-sm"></div>
                     </div>
-                    <div class="siimple-table-cell siimple-table-cell--2 siimple-hide-sm">
-                        <span class="siimple-tag siimple-tag--light" style="white-space: nowrap;" :title="getPointsPerPlayerAverage(team)">
-                            {{ getRoundProgress(team) }}
-                        </span>
-                    </div>
-                    <div class="siimple-table-cell siimple-table-cell--1">{{ team.real_event_total }}</div>
-                    <div class="siimple-table-cell siimple-table-cell--1">{{ team.real_total}}</div>
-                    <div class="siimple-table-cell siimple-table-cell--1 siimple--text-center clickable" style="border-left: 1px solid #cbd8e6;" @click="toggleDetails(team.entry)">
-                        <span style="font-size: 25px;">
-                            <span v-if="team.expanded"><i class="fa fa-caret-up"></i></span>
-                            <span v-else><i class="fa fa-caret-down"></i></span>
-                        </span>
-                    </div>
-                </div>
-                <div class="siimple-table-row" :class="{'faded': pick.benched && team.active_chip != 'bboost'}" v-show="showPlayer(team, pick)" v-for="pick in team.picks">
-                    <div class="siimple-table-cell siimple-table-cell--1 padding-right-0">{{ getPositionInString(pick.position, pick.benched) }}</div>
-                    <div class="siimple-table-cell siimple-table-cell--5">
-                        <strong :class="getAvailabilityClass(pick)" :title="pick.availability_text">{{ pick.name }} <i v-show="isDubious(pick)" :class="getAvailabilityIconClass(pick)"></i></strong> <strong>{{ getCaptaincyRoleIfAny(pick) }} </strong><span v-if="pick.transferred_in_for"><i class="siimple--color-success fa fa-arrow-alt-circle-up"></i> <span style="white-space: nowrap;">{{ pick.transferred_in_for }} <i class="siimple--color-error fa fa-arrow-alt-circle-down"></i></span></span>
-                    </div>
-                    <div class="siimple-table-cell siimple-table-cell--1">
-                        <span class="siimple-table-cell-sortable open-modal" @click="setModalContent(pick)">
-                            <strong>{{ pick.points }}</strong> pts
-                        </span>
-                    </div>
-                    <div class="siimple-table-cell siimple-table-cell--1">
-                        <span class="siimple-tag margin-right-5 siimple-hide-sm" :class="getFixtureFormat(fixture, 'class')" style="white-space: nowrap;" v-for="fixture in pick.fixtures">
-                            <i class="fas" :class="getFixtureFormat(fixture, 'icon')"></i>
-                            {{ getFixtureFormat(fixture, 'text') }}
-                        </span>
-                    </div>
-                    <div class="siimple-table-cell siimple-table-cell--1"></div>
-                    <div class="siimple-table-cell siimple-table-cell--1 siimple-hide-sm"></div>
-                </div>
+                </template>
             </div>
         </div>
 

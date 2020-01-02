@@ -31,6 +31,13 @@ a {
 	top: 50%;
 	z-index: 1;
 }
+
+.ellipsis {
+	overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .loading-spinner {
 	left: 48%;
 }
@@ -164,6 +171,10 @@ a {
 
 .siimple--color-neutral {
 	color: #e2e2e2;
+}
+
+.siimple-table {
+	table-layout: fixed;
 }
 
 .siimple-table-header-compact {
