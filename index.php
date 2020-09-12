@@ -60,7 +60,7 @@
 			<main-component
 				:unsupported='<?php echo json_encode($base->visitorIsUsingUnsupportedBrowser()); ?>'
 				:updating='<?php echo json_encode($fantasy->isUpdating()); ?>'
-				:countdown='<?php echo json_encode($fantasy->getTimeToNextGameweek()); ?>'>
+				:countdown='<?php echo json_encode($fantasy->isCountingDown()); ?>'>
 			</main-component>
 		</div>
 		<script type="module" src="/fantasy/js/App.js?v=<?php echo str_shuffle('abdefghijklmnopqrstuxyz1234567890') ?>"></script>

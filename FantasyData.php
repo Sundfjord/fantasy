@@ -71,29 +71,42 @@ class FantasyData
         return false;
     }
 
-    public function getTimeToNextGameweek()
+    public function isActive()
     {
-        $currentGWData;
-        $nextGWData;
-        if ($this->isUpdating()) {
+        $active = false;
+        $i = 0;
+        while(!$active && $i < 37) {
+            $event = $this->staticData['events'][$i];
+            if ($event['is_current'] && !$event['finished']) {
+                $active = true;
+            }
+            $i++;
+        }
+
+        return $active;
+    }
+
+    public function isCountingDown()
+    {
+        if ($this->isActive() || $this->isUpdating()) {
             return 0;
         }
 
-        foreach ($this->staticData['events'] as $gw => $gwData) {
-            if (!$gwData['is_current']) {
-                continue;
+        $gameweek = null;
+        $i = 0;
+        while(!$gameweek && $i < 37) {
+            $event = $this->staticData['events'][$i];
+            if (strtotime($event['deadline_time']) > time()) {
+                $gameweek = $event;
             }
-
-            $currentGWData = $gwData;
-            $nextGWData = $this->staticData['events'][$gw+1];
+            $i++;
         }
 
-        $countdown = 0;
-        if ($currentGWData['finished']) {
-            $countdown = strtotime($nextGWData['deadline_time']) + 0 * 60;
+        if (!$gameweek) {
+            return 0;
         }
 
-        return $countdown;
+        return strtotime($event['deadline_time']) + 0 * 60;
     }
 
     public function setStaticData()
