@@ -185,6 +185,10 @@ a {
 	background-color: rgba(238,242,247,.8);
 }
 
+.siimple-table-row-disabled {
+	opacity: 0.4;
+}
+
 .siimple-table-cell {
 	padding: 5px 10px;
 	vertical-align: middle;
