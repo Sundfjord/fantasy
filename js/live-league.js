@@ -1,6 +1,11 @@
 export default {
     template: `
     <div>
+    <div class="siimple-grid-row margin-bottom-10" v-show="updating">
+        <div class="siimple-alert siimple-alert--primary">
+            League tables are currently being re-calculated. The table below may contain inaccurate data.
+        </div>
+    </div>
     <div class="siimple-grid-row margin-bottom-10">
         <div class="siimple-btn siimple-btn--grey" @click="goBack" v-show="team"><span class="fas fa-arrow-left"></span> Back</div>
         <div class="siimple-btn siimple-btn--primary siimple--float-right" v-show="team && league" @click="update"><span class="fas fa-sync-alt margin-right-5"></span> Update</div>
@@ -142,8 +147,12 @@ export default {
                 name: '',
                 content: {}
             },
-            showBench: true
+            showBench: true,
+            updating: false
         }
+    },
+    created() {
+        this.checkIfUpdating();
     },
     mounted() {
         this.setIntersectionObserver();
@@ -190,6 +199,18 @@ export default {
             let observer = new IntersectionObserver(this.loadMoreTeams, config);
             observer.observe(observed);
             this.intersectionObserver = observer;
+        },
+        checkIfUpdating() {
+            var that = this;
+            $.ajax({
+                url: '/fantasy/get-data.php',
+                data: {
+                    info: 'updating'
+                }
+            }).always(function(response) {
+                var response = JSON.parse(response);
+                that.updating = response.updating;
+            });
         },
         update(more) {
             if (!this.league.length) {

@@ -533,6 +533,13 @@ class FantasyData
         return [$out, $in];
     }
 
+    public function checkIfLeagueIsUpdating()
+    {
+        $data = $this->curl->get("https://fantasy.premierleague.com/api/event-status/", true);
+
+        return $data['leagues'] == 'Updating' ?? false;
+    }
+
     protected function dump($data, $die = false)
     {
         echo '<pre>';var_dump($data);echo '</pre>';

@@ -21,6 +21,8 @@ switch($data['info']) {
 			$count++;
 		} while (empty($result['data']) && $count < 5);
 		break;
+	case 'updating':
+		$result['updating'] = $fantasy->checkIfLeagueIsUpdating();
 }
 
 if ($fantasy->errorMessage) {
