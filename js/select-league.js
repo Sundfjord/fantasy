@@ -2,11 +2,6 @@ export default {
     template: `
         <div>
             <div class="siimple-grid-row margin-bottom-10">
-                <div class="siimple-alert siimple-alert--warning" v-show="team.current_event == 1">
-                    Real-time league scores will not be available until GW2.
-                </div>
-            </div>
-            <div class="siimple-grid-row margin-bottom-10">
                 <div class="siimple-btn siimple-btn--grey margin-bottom-0" @click="goBack" v-show="team"><span class="fas fa-arrow-left"></span> Back</div>
                 <!--<div class="siimple-switch siimple--float-right margin-right-30">
                     <input type="checkbox" id="mySwitch" checked>
@@ -28,7 +23,7 @@ export default {
                         </div>
                     </div>
                     <div class="siimple-table-body">
-                        <div class="siimple-table-row" :class="{'siimple-table-row-disabled': team.current_event == 1}" v-for="league in leagues.classic" v-show="league.league_type != 's'" @click="getLeagueData(league.id)">
+                        <div class="siimple-table-row" v-for="league in leagues.classic" v-show="league.league_type != 's'" @click="getLeagueData(league.id)">
                             <div class="siimple-table-cell padding-right-0">{{ league.name }}</div>
                             <div class="siimple-table-cell">{{ league.entry_rank }}</div>
                         </div>
@@ -40,9 +35,6 @@ export default {
     props: ['team', 'leagues'],
     methods: {
         getLeagueData(leagueId) {
-            if (this.team.current_event == 1) {
-                return;
-            }
             this.$emit('loading');
             var payload = {
                 teamID: this.team.id,

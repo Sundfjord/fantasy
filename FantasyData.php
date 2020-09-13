@@ -186,6 +186,9 @@ class FantasyData
         $currentEvent = false;
         $teams = [];
         foreach ($leagueData as $page) {
+            if (!isset($page['standings']['results'])) {
+                return [];
+            }
             foreach ($page['standings']['results'] as $index => $team) {
                 // Get current gameweek
                 if (!$currentEvent) {
@@ -253,7 +256,7 @@ class FantasyData
                     'transferred_in_for' => false,
                     'benched' => $benched,
                     'breakdown' => $this->getLivePointsDataForPlayers($gameweekLiveData['elements'], $id, $currentEvent),
-                    'fixtures' => $gameweekFixturesData[$this->playerData[$id]['team']],
+                    'fixtures' => $gameweekFixturesData[$this->playerData[$id]['team']] ?? [],
                 ];
 
                 // Insert who this player was transferred in for if he was transferred in this gameweek

@@ -14,7 +14,18 @@ export default {
         </div>
         <div class="siimple-switch-label">Show bench</div>
     </div>
-    <div class="siimple-grid-row-fullwidth">
+    <div class="siimple-grid-row-fullwidth" v-if="!league.length && !isLoadingMoreTeams">
+        <div class="siimple-alert siimple-alert--warning" v-show="team.current_event > 1">
+            Real-time league scores will not be available until scores from the first match day of GW1 has been processed.
+        </div>
+        <div class="siimple-alert siimple-alert--error" v-show="team.current_event == 1">
+            An unexpected error occurred. Please try again.
+        </div>
+        <div id="observed-element" class="siimple-text-center">
+            <div class="siimple-spinner siimple-spinner--dark siimple-spinner--large" v-show="isLoadingMoreTeams"></div>
+        </div>
+    </div>
+    <div class="siimple-grid-row-fullwidth" v-else>
         <div class="siimple-table siimple-table--striped">
             <div class="siimple-table-header" style="padding: 10px; border-bottom: 0!important;">
                 <div class="siimple-table-row">
@@ -181,6 +192,10 @@ export default {
             this.intersectionObserver = observer;
         },
         update(more) {
+            if (!this.league.length) {
+                return;
+            }
+
             let page = 1;
             if (more === true) {
                 this.isLoadingMoreTeams = true;
@@ -411,6 +426,9 @@ export default {
             return '(C)';
         },
         getMovement(team) {
+            if (team.last_rank == 0) {
+                return 'same';
+            }
             if (team.real_rank < team.last_rank) {
                 return "up";
             }
