@@ -120,6 +120,9 @@ export default {
 		setLeague(data, leagueId) {
 			this.league = data;
 			this.loading = false;
+			if (!this.league.length) {
+				return;
+			}
 			let url = this.baseURL + '?team=' + this.team.id + '&league=' + data[0].league;
 			this.pushNewURL(url);
 		},
